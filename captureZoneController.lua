@@ -108,9 +108,29 @@ local function SetZonesBlue(zonePrefix)
     PrintToDCS("SetZonesBlue Ended")
 end
 
---local function SetSpawners()
+local function SetUnSpawns()
 
---end
+end
+
+local function SetRedSpawns()
+
+end
+
+local function SetBluSpawns()
+
+end
+
+local function SetRedAttackers()
+
+end
+
+local function SetBlueAttackers()
+
+end
+
+local function SetSpawns()
+
+end
 
 function StartMission(zonePrefix)
 
