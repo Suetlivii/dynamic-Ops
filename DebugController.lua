@@ -1,21 +1,23 @@
-local isDebugMode = false
+isDebugMode = true
 
-function PrintToDCS(messageString)
+DebugController = {}
+function DebugController:New(_isDebugMose)
+    newObj = 
+    {
+        debugMode = _isDebugMose
+    }
 
-    if isDebugMode == true then
-    MESSAGE:NewType(messageString, MESSAGE.Type.Information ):ToAll()
-
-    end
+    self.__index = self                      
+    return setmetatable(newObj, self) 
 end
 
-    
-function PrintTableToDCS(tableToPrint)
+function DebugController:PrintToDCS(msg)
 
-    for key, val in pairs(tableToPrint) do
-        
-        messageString = val.nickname .. " " .. val.money .. " " .. val.destroedObjects
-        MESSAGE:NewType(messageString , MESSAGE.Type.Information ):ToAll()
-     
+    if self.debugMode == true then
+    MESSAGE:NewType(msg, MESSAGE.Type.Information ):ToAll()
     end
 
 end
+
+debugController = DebugController:New(isDebugMode)
+debugController:PrintToDCS("Debug Controller Initialized")

@@ -1,3 +1,10 @@
+local isDebug = true
+
+local function PrintToDCS(msg)
+    if isDebug == true then
+        debugController:PrintToDCS(msg)
+    end
+end
 --group Sets red
 
 redInfUnmounted = nil
@@ -47,6 +54,7 @@ blueSamLong = nil
 blueSuppTrack = nil
 
 local function SetRedGroups()
+    PrintToDCS("SetRedGroupsStarted")
 
     redInfUnmounted = SET_GROUP:New()
     redInfUnmounted:FilterPrefixes( { "redInfUnmounted" } )
@@ -189,3 +197,12 @@ local function SetBlueGroups()
     blueSuppTrack:FilterOnce()
 
 end
+
+local function SetGroups()
+
+    SetRedGroups()
+    SetBlueGroups()
+
+end
+
+SetGroups()
