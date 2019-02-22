@@ -24,17 +24,14 @@ A2ADispatcher:SetSquadron( "mig23Gudauta", AIRBASE.Caucasus.Gudauta, { "RU mig23
 A2ADispatcher:SetSquadron( "mig29Gudauta", AIRBASE.Caucasus.Gudauta, { "RU mig29" }, 10 )
 
 A2ADispatcher:SetSquadronTakeoffFromParkingHot( "mig23Gudauta" )
-A2ADispatcher:SetSquadronTakeoffFromParkingHot( "mig29Gudauta" ) 
+A2ADispatcher:SetSquadronTakeoffFromParkingHot( "mig29Gudauta" )
 
 A2ADispatcher:SetSquadronLandingAtEngineShutdown( "mig23Gudauta" )
 A2ADispatcher:SetSquadronLandingAtEngineShutdown( "mig29Gudauta" )
 
- RUcapZone = ZONE:New( "redCapZone")
- A2ADispatcher:SetSquadronCap( "mig23Gudauta", RUcapZone, 600, 6500, 600, 800, 800, 1200, "RADIO" )
- A2ADispatcher:SetSquadronCapInterval( "mig23Gudauta", 3, 30, 60, 1 )
- 
- A2ADispatcher:SetSquadronGci( "mig23Gudauta", 900, 1200 )
- A2ADispatcher:SetSquadronGci( "mig29Gudauta", 900, 1200 )
- 
- 
- 
+RUcapZone = ZONE:New( "redCapZone")
+A2ADispatcher:SetSquadronCap( "mig23Gudauta", RUcapZone, 600, 6500, 600, 800, 800, 1200, "RADIO" )
+A2ADispatcher:SetSquadronCapInterval( "mig23Gudauta", 3, 30, 60, 1 )
+
+A2ADispatcher:SetSquadronGci( "mig23Gudauta", 900, 1200 )
+A2ADispatcher:SetSquadronGci( "mig29Gudauta", 900, 1200 )

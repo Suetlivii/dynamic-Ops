@@ -2,19 +2,19 @@ isDebugMode = true
 
 DebugController = {}
 function DebugController:New(_isDebugMose)
-    newObj = 
+    newObj =
     {
         debugMode = _isDebugMose
     }
 
-    self.__index = self                      
-    return setmetatable(newObj, self) 
+    self.__index = self
+    return setmetatable(newObj, self)
 end
 
 function DebugController:PrintToDCS(msg)
 
     if self.debugMode == true then
-    MESSAGE:NewType(msg, MESSAGE.Type.Information ):ToAll()
+    MESSAGE:NewType(tostring(msg), MESSAGE.Type.Information ):ToAll()
     end
 
 end
