@@ -31,7 +31,7 @@ A2ADispatcher:SetSquadronLandingAtEngineShutdown( "mig29Gudauta" )
 
 RUcapZone = ZONE:New( "redCapZone")
 A2ADispatcher:SetSquadronCap( "mig23Gudauta", RUcapZone, 600, 6500, 600, 800, 800, 1200, "RADIO" )
-A2ADispatcher:SetSquadronCapInterval( "mig23Gudauta", 3, 30, 60, 1 )
+A2ADispatcher:SetSquadronCapInterval( "mig23Gudauta", 1, 30, 60, 1 )
 
 A2ADispatcher:SetSquadronGci( "mig23Gudauta", 900, 1200 )
 A2ADispatcher:SetSquadronGci( "mig29Gudauta", 900, 1200 )
