@@ -1,0 +1,1 @@
+mainTasksContainer:GetRandomTask():StartTask()

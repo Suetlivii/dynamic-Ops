@@ -86,7 +86,7 @@ local function PrintBrifs(coalition)
 
 end
 
-TasksReportTest()
+--TasksReportTest()
 
 MenuTasks = MENU_COALITION:New( coalition.side.BLUE, "Tasks" )
 MenuTasksShow = MENU_COALITION_COMMAND:New( coalition.side.BLUE, "Show Tasks", MenuTasks, PrintBrifs, coalition.side.BLUE)
