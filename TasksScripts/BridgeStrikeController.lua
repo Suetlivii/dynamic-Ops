@@ -14,10 +14,7 @@ function taskStrikeEastBidge:StartTask()
     local targetStaticUNIT = STATIC:FindByName( "bridgeTargetStatic" )
     targetStaticUNIT:HandleEvent( EVENTS.Dead )
 
-    taskBrifStrikeEastBidge = TaskBrifController:New()
-    missionBrifManager:AddNewBrif(taskBrifStrikeEastBidge)
-
-    taskBrifStrikeEastBidge.brifText =
+    self.taskBrif =
     "Destroy bridge"
 
     local bridgeCoord = targetStaticUNIT:GetCoordinate()
@@ -25,9 +22,9 @@ function taskStrikeEastBidge:StartTask()
 
     function targetStaticUNIT:OnEventDead(EventData)
 
-        MESSAGE:NewType("Bridge Destroyed!", MESSAGE.Type.Information ):ToAll()
+        --reportManagerBlue:ReportToAll("Bridge Destroyed!")
 
-        taskBrifStrikeEastBidge.brifText =
+        self.taskBrif =
         "TASK: Strike\r" ..
         "\r" ..
         "Bridge is destroyed, task completed." 
@@ -36,4 +33,4 @@ function taskStrikeEastBidge:StartTask()
 
 end
 
-mainTasksContainer:AddTask(taskStrikeEastBidge)
+tasksContainerBlue:AddTask(taskStrikeEastBidge)

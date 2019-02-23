@@ -2,20 +2,21 @@
 --Task controller must have :StartTask() method
 --Tasks can be main and additional
 
-TasksManager = {}
+TasksContainer = {}
 
-function TasksManager:New()
+function TasksContainer:New(_tasksCoalition)
 
     newObj = 
     {
-        tasksList = {}
+        tasksList = {},
+        tasksCoalition = _tasksCoalition
     }
     self.__index = self
     return setmetatable(newObj, self)
 
 end
 
-function TasksManager:GetRandomTask()
+function TasksContainer:GetRandomTask()
 
     local tableCount = 0
 
@@ -32,7 +33,7 @@ function TasksManager:GetRandomTask()
     end
 end
 
-function TasksManager:AddTask(newTask)
+function TasksContainer:AddTask(newTask)
 
     if newTask ~= nil then
         table.insert(self.tasksList, newTask)
@@ -40,13 +41,14 @@ function TasksManager:AddTask(newTask)
 
 end
 
-function TasksManager:RemoveTask(taskToBeRemoved)
+function TasksContainer:RemoveTask(taskToBeRemoved)
 
     if taskToBeRemoved ~= nil then
         table.remove(self.tasksList, taskToBeRemoved)
     end
 
 end
+
 
 --Task Class for testing
 TaskController = {}
@@ -71,9 +73,7 @@ function TaskController:StartTask()
 
 end
 
-
-mainTasks = TasksManager:New()
-additionalTasks = TasksManager:New()
+tasksContainerBlue = TasksContainer:New()
 
 
 
