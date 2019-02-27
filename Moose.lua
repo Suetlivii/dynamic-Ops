@@ -44,7 +44,6 @@ routines.utils.deepCopy = function(object)
 	return objectreturn
 end
 
-
 -- porting in Slmod's serialize_slmod2
 routines.utils.oneLineSerialize = function(tbl)  -- serialization of a table all on a single line, no comments, made to replace old get_table_string function
 
@@ -12329,7 +12328,6 @@ do -- SET_BASE
   end
 
 end
-
 
 do -- SET_GROUP
 

@@ -73,10 +73,3 @@ function TaskController:StartTask()
 
 end
 
-tasksContainerBlue = TasksContainer:New()
-
-
-
-
-
-
