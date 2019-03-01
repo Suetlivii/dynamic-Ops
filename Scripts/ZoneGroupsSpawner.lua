@@ -28,7 +28,44 @@ function ZoneGroupsSpawner:FindAllOnStartZones()
     return onStartZonesList
 end
 
+function FindInTable(table, objToFind)
+    for i in ipairs(table) do
+        if table[i] == objToFind then 
+            return true
+        end
+    end
+    return false
+end
+
 function ZoneGroupsSpawner:SpawnAllGroups()
+
+    local unicZonesList = {}
+    local zonesOnStart = ZoneGroupsSpawner:FindAllOnStartZones()
+
+    for i in ipairs(zonesOnStart) do 
+        
+        local tempZoneNameParser = ZoneNameParser:New()
+        tempZoneNameParser:Parse(zonesOnStart[i])
+
+        if FindInTable(unicZonesList, tempZoneNameParser:GetZoneFullPrefix()) == false then
+            table.insert(unicZonesList, tempZoneNameParser:GetZoneFullPrefix())
+        end
+
+    end
+
+    for i in ipairs(unicZonesList) do 
+
+        local tempZoneNameParser = ZoneNameParser:New()
+        tempZoneNameParser:Parse(unicZonesList[i])
+        --tasksReportController:Debug(tempZoneNameParser:GetZoneFullPrefix())
+        local zoneToSpawnSet = SET_ZONE:New():FilterPrefixes(tempZoneNameParser:GetZoneFullPrefix()):FilterOnce()
+
+        local spawnCoalition = mainCampaignStateController.allSectorStates[tonumber(tempZoneNameParser.sectorNumber)].sectorCoalition
+        --tasksReportController:Debug(tempZoneNameParser.sectorNumber)
+        local groupToSpawnSet = SET_GROUP:New():FilterPrefixes(spawnCoalition .. tempZoneNameParser.groupPrefix):FilterOnce()
+
+        local newSpawn = SPAWN:NewWithAlias( groupToSpawnSet:GetRandom():GetName(), tempZoneNameParser:GetZoneFullPrefix()):InitLimit(999, 999):SpawnInZone(zoneToSpawnSet:GetRandomZone())
+    end
 
 end
 
@@ -42,4 +79,4 @@ end
 --ZoneGroupSpawner end
 
 zoneGroupsSpawner = ZoneGroupsSpawner:New()
-zoneGroupsSpawner:FindAllOnStartZones()
+zoneGroupsSpawner:SpawnAllGroups()

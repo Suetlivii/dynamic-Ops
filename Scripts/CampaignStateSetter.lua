@@ -25,15 +25,20 @@ function abkhazianCampaignState:SetState()
 
     newAllSectorStates = 
     {
-        SectorState:New(1, coalition.side.RED, 3),
-        SectorState:New(2, coalition.side.RED, 3),
-        SectorState:New(3, coalition.side.RED, 3),
-        SectorState:New(4, coalition.side.RED, 3),
-        SectorState:New(5, coalition.side.RED, 3),
-        SectorState:New(6, coalition.side.BLUE, 3),
-        SectorState:New(7, coalition.side.BLUE, 3),
+        SectorState:New(1, "Red", 3),
+        SectorState:New(2, "Red", 3),
+        SectorState:New(3, "Red", 3),
+        SectorState:New(4, "Red", 3),
+        SectorState:New(5, "Red", 3),
+        SectorState:New(6, "Blue", 3),
+        SectorState:New(7, "Blue", 3),
     }
 
-    self.newCampaignState.allSectorStates = newAllSectorStates
+    self.allSectorStates = newAllSectorStates
 
+
+
+    mainCampaignStateController = routines.utils.deepCopy(self)
 end
+
+abkhazianCampaignState:SetState()
