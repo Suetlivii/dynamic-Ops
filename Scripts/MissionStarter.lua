@@ -1,5 +1,6 @@
 -----------------------------------
 --MissionStarter - starts mission logic
+--Dependencies: taskReportController object, CampaignStateController class, ZoneGroupSpawner class, mainCampaignStateSetter object
 -----------------------------------
 
 MissionStarter = {}
@@ -18,14 +19,16 @@ function MissionStarter:StartRandomTask()
         local randomTaskNum = math.random(1, #mainTasksContainer.allTasks)
         tasksReportController:Debug("MissionStarter:StartMission randomTaskNum = " .. randomTaskNum)
         mainTasksContainer.allTasks[randomTaskNum]:StartTask()
+    else
+        tasksReportController:Debug("MissionStarter:StartMission: No tasks, allTasks count is 0 ")
     end
 end
 
 mainMissionStarter = MissionStarter:New()
 
 mainCampaignStateController = CampaignStateController:New()
+
 mainCampaignStateSetter:SetState()
-mainTasksContainer = TasksContainer:New()
 
 mainZoneGroupsSpawner = ZoneGroupsSpawner:New()
 mainZoneGroupsSpawner:SpawnAllGroups()

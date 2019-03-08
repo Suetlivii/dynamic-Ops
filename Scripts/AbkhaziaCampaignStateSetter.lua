@@ -1,5 +1,6 @@
 ---------
 --CampaignStateSetter creates new CampaignStateController
+--Dependencies: mainCampaignStateController object of CampaignStateController
 ---------
 
 --CampaignStateSetter

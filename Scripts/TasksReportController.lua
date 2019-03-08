@@ -28,13 +28,12 @@ function TasksReportController:Debug(msgString)
     end
 end
 
-function TasksReportController:ReportToAll(message)
-    newReportMessage = MESSAGE:New(tostring(message), 45, false):ToAll()
+function TasksReportController:ReportToAll(msgString)
+    newDebugMessage = MESSAGE:New(tostring(msgString), 45, false):ToAll()
 end
 
 function TasksReportController:ReportAllTasks()
     
-
 end
 --TasksReportController end
 

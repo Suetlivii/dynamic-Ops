@@ -1,14 +1,17 @@
 -----------------------------------------
 --DeepStrike task controller
+--Dependencies: TaskController class
 -----------------------------------------
 
 TaskDeepStrike = TaskController:New()
+TaskDeepStrike.taskName = "Deep Strike"
+TaskDeepStrike.localizedReport["En"] = "Test en brif"
+TaskDeepStrike.taskCoalition = "Blue"
+TaskDeepStrike.isFailCounts = true
 
 TaskDeepStrike:AddTaskToContainer()
-
-TaskDeepStrike.localizedReport["En"] = "Test en brif" 
-
+ 
 function TaskDeepStrike:StartTask()
-    self.ReportTask("En")
+    TaskDeepStrike:ReportTask("En")
 end
 

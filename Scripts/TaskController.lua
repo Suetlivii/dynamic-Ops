@@ -1,5 +1,6 @@
 -------------------------------------------
 --TaskController - starting and controlling tasks progress, contains task brifieng
+--Dependencies: tasksReportController object, mainTasksContainer object 
 -------------------------------------------
 
 TaskController = {}
@@ -7,7 +8,7 @@ TaskController = {}
 function TaskController:New()
     newObj = 
     {
-        taskName,
+        taskName = "default task name",
         localizedReport = {},
         taskCoalition = "",
         isFailCounts = true
@@ -16,8 +17,8 @@ function TaskController:New()
     return setmetatable(newObj, self)
 end
 
-function TaskController:AddTaskToContainer(taskContainer)
-    taskContainer:AddNewTask(self)
+function TaskController:AddTaskToContainer()
+    mainTasksContainer:AddNewTask(self)
     tasksReportController:Debug("TaskController:" .. self.taskName .. ": " .. " added.")
 end
 
@@ -26,8 +27,12 @@ function TaskController:StartTask()
 end
 
 function TaskController:ReportTask(language)
-    if localizedReport[language] ~= nil or localizedReport[language] ~= "" then 
-        tasksReportController:ReportToAll( localizedReport[language] )
+    if self.localizedReport == nil then 
+        tasksReportController:Debug("TaskController:" .. self.taskName .. ": " .. "localizedReportName is nil for some reason")
+    end
+
+    if self.localizedReport[language] ~= nil and self.localizedReport[language] ~= "" then 
+        tasksReportController:ReportToAll( self.localizedReport[language] )
     else
         tasksReportController:Debug("TaskController:" .. self.taskName .. ": " .. "nil or empty message on ReportTask")
     end

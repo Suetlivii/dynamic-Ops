@@ -1,5 +1,6 @@
 ----------
 --Controller that spawns all groups at mission start
+--Dependencies: Moose, ZoneNameParser class, mainCampaignStateController object
 ----------
 
 --ZoneGroupSpawner 

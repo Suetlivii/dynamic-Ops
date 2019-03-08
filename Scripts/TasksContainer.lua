@@ -1,5 +1,6 @@
 --------------------------------
 --TasksContainer - contains all tasks, start random task at mission start
+--Dependencies: Nothing
 --------------------------------
 
 TasksContainer = {}
@@ -22,6 +23,8 @@ function TasksContainer:StartTaskByName(taskName)
 end
 
 function TasksContainer:AddNewTask(newTaskController)
-
+    table.insert(self.allTasks, newTaskController)
 end
 ----------------
+
+mainTasksContainer = TasksContainer:New()
