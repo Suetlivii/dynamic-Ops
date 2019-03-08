@@ -1,6 +1,7 @@
 ------------
 --Controlling Campaign State
 --Main Data Class
+--Dependencies: Nothing
 ------------
 
 --CampaignStateController
@@ -37,4 +38,3 @@ function CampaignStateController:GetZoneGroupIsAlive(zonePrefix)
 end
 --CampaignStateController end
 
-mainCampaignStateController = CampaignStateController:New()

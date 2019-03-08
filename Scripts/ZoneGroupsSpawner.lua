@@ -78,5 +78,3 @@ function ZoneGroupsSpawner:AddZoneGroupToState(zoneFullName)
 end
 --ZoneGroupSpawner end
 
-zoneGroupsSpawner = ZoneGroupsSpawner:New()
-zoneGroupsSpawner:SpawnAllGroups()

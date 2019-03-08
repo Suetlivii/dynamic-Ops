@@ -16,8 +16,8 @@ function TaskController:New()
     return setmetatable(newObj, self)
 end
 
-function TaskController:AddTaskToContainer()
-    mainTasksContainer:AddNewTask(self)
+function TaskController:AddTaskToContainer(taskContainer)
+    taskContainer:AddNewTask(self)
     tasksReportController:Debug("TaskController:" .. self.taskName .. ": " .. " added.")
 end
 

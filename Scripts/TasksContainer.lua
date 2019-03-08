@@ -25,5 +25,3 @@ function TasksContainer:AddNewTask(newTaskController)
 
 end
 ----------------
-
-mainTasksContainer = TasksContainer:New()

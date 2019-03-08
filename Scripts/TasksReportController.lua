@@ -1,5 +1,6 @@
 ------------
 --Controller that print messages to DCS
+--Dependencies: Moose 
 ------------
 
 --TasksReportController

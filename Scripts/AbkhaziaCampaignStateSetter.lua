@@ -19,9 +19,9 @@ function CampaignStateSetter:SetState()
 end
 --CampaignStateSetter end
 
-abkhazianCampaignState = CampaignStateSetter:New()
+mainCampaignStateSetter = CampaignStateSetter:New()
 
-function abkhazianCampaignState:SetState()
+function mainCampaignStateSetter:SetState()
 
     newAllSectorStates = 
     {
@@ -41,4 +41,3 @@ function abkhazianCampaignState:SetState()
     mainCampaignStateController = routines.utils.deepCopy(self)
 end
 
-abkhazianCampaignState:SetState()
