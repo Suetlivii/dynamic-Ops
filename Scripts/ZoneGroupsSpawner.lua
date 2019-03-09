@@ -64,7 +64,6 @@ function ZoneGroupsSpawner:SpawnAllGroups()
         local spawnCoalition = mainCampaignStateController.allSectorStates[tonumber(tempZoneNameParser.sectorNumber)].sectorCoalition
         --tasksReportController:Debug(tempZoneNameParser.sectorNumber)
         local groupToSpawnSet = SET_GROUP:New():FilterPrefixes(spawnCoalition .. tempZoneNameParser.groupPrefix):FilterOnce()
-
         local newSpawn = SPAWN:NewWithAlias( groupToSpawnSet:GetRandom():GetName(), tempZoneNameParser:GetZoneFullPrefix()):InitLimit(999, 999):SpawnInZone(zoneToSpawnSet:GetRandomZone())
     end
 
