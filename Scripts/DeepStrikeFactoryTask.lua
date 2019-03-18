@@ -6,12 +6,12 @@
 TaskDeepStrike = TaskController:New()
 TaskDeepStrike.taskName = "Deep Strike"
 TaskDeepStrike.localizedReport["En"] = 
-"DEEP STRIKE:\r" ..
+"DEEP STRIKE:\n" ..
 "Destroy the factory, check F10 map"
 TaskDeepStrike.taskCoalition = "Blue"
 TaskDeepStrike.isFailCounts = true
 
-TaskDeepStrike:AddTaskToContainer()
+TaskDeepStrike:AddTaskToContainer(TaskDeepStrike)
  
 function TaskDeepStrike:StartTask()
     TaskDeepStrike:ReportTask("En")
@@ -31,7 +31,7 @@ function TaskDeepStrike:StartTask()
     function missionTargetUnit:OnEventDead( EventData )
 
         TaskDeepStrike.localizedReport["En"] = 
-        "DEEP STRIKE:\r" ..
+        "DEEP STRIKE:\n" ..
         "Target destoyed, mission completed"
 
         TaskDeepStrike:ReportTask("En")

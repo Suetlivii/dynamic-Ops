@@ -17,9 +17,9 @@ function TaskController:New()
     return setmetatable(newObj, self)
 end
 
-function TaskController:AddTaskToContainer()
-    mainTasksContainer:AddNewTask(self)
-    tasksReportController:Debug("TaskController:" .. self.taskName .. ": " .. " added.")
+function TaskController:AddTaskToContainer(task)
+    mainTasksContainer:AddNewTask(task)
+    tasksReportController:Debug("TaskController:" .. task.taskName .. ": " .. " added.")
 end
 
 function TaskController:StartTask()
@@ -27,8 +27,8 @@ function TaskController:StartTask()
 end
 
 function TaskController:ReportTask(language)
-    if self.localizedReport == nil then 
-        tasksReportController:Debug("TaskController:" .. self.taskName .. ": " .. "localizedReportName is nil for some reason")
+    if self == nil then 
+        tasksReportController:Debug("TaskController: task is nill")
     end
 
     if self.localizedReport[language] ~= nil and self.localizedReport[language] ~= "" then 

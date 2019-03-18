@@ -16,15 +16,15 @@ A2ADispatcher:SetDefaultGrouping(2)
 
 A2ADispatcher:SetDefaultOverhead(2)
 
-A2ADispatcher:SetEngageRadius( 130000 )
+A2ADispatcher:SetEngageRadius( 100000 )
 
 A2ADispatcher:SetGciRadius( 200000 )
 
 ABBorderZone = ZONE_POLYGON:New( "AB", GROUP:FindByName( "borderPlane" ) )
 A2ADispatcher:SetBorderZone( ABBorderZone )
 
-A2ADispatcher:SetSquadron( "mig23Gudauta", AIRBASE.Caucasus.Gudauta, { "RedPlaneMilitaryFighterMig23" }, 12 )
-A2ADispatcher:SetSquadron( "mig29Gudauta", AIRBASE.Caucasus.Gudauta, { "RedPlaneMilitaryFighterMig29s" }, 10 )
+A2ADispatcher:SetSquadron( "mig23Gudauta", AIRBASE.Caucasus.Sukhumi_Babushara, { "RedPlaneMilitaryFighterMig23" }, 8 )
+A2ADispatcher:SetSquadron( "mig29Gudauta", AIRBASE.Caucasus.Gudauta, { "RedPlaneMilitaryFighterMig29s" }, 4 )
 
 A2ADispatcher:SetSquadronTakeoffFromParkingHot( "mig23Gudauta" )
 A2ADispatcher:SetSquadronTakeoffFromParkingHot( "mig29Gudauta" )
@@ -34,7 +34,7 @@ A2ADispatcher:SetSquadronLandingAtEngineShutdown( "mig29Gudauta" )
 
 RUcapZone = ZONE:New( "RedCapZone")
 A2ADispatcher:SetSquadronCap( "mig23Gudauta", RUcapZone, 600, 6500, 600, 800, 800, 1200, "RADIO" )
-A2ADispatcher:SetSquadronCapInterval( "mig23Gudauta", 3, 30, 60, 1 )
+A2ADispatcher:SetSquadronCapInterval( "mig23Gudauta", 3, 600, 1200, 1 )
 
 A2ADispatcher:SetSquadronGci( "mig23Gudauta", 900, 1200 )
 A2ADispatcher:SetSquadronGci( "mig29Gudauta", 900, 1200 )

@@ -1,6 +1,6 @@
 ------------
 --Controller that print messages to DCS
---Dependencies: Moose 
+--Dependencies: Moose, mainTasksContainer
 ------------
 
 --TasksReportController
@@ -24,7 +24,7 @@ end
 --"ClassName:" .. self.ObjectName .. ":"
 function TasksReportController:Debug(msgString)
     if self.isDebugMode == true then
-        newDebugMessage = MESSAGE:New(tostring(msgString .. "\r"), 10, "DEBUG", false):ToAll()
+        newDebugMessage = MESSAGE:New(tostring(msgString .. "\n"), 10, "DEBUG", false):ToAll()
     end
 end
 
@@ -33,13 +33,18 @@ function TasksReportController:ReportToAll(msgString)
 end
 
 function TasksReportController:ReportAllTasks()
-    
+    for i in ipairs(mainTasksContainer.allTasks) do
+        if mainTasksContainer.allTasks[i] ~= nil then 
+            tasksReportController:Debug("tasksReportController: trying to report task number " .. tostring(i))
+            mainTasksContainer.allTasks[i]:ReportTask("En")
+        end
+    end
 end
 --TasksReportController end
 
 tasksReportController = TasksReportController:New()
 
-tasksReportController.isDebugMode = true
+tasksReportController.isDebugMode = false
 
 function ReportTasksCommand()
 
