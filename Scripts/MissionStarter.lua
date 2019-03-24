@@ -1,6 +1,6 @@
 -----------------------------------
 --MissionStarter - starts mission logic
---Dependencies: taskReportController object, CampaignStateController class, ZoneGroupSpawner class, mainCampaignStateSetter object
+--Dependencies: taskReportController object, CampaignStateContainer class, ZoneGroupSpawner class, mainCampaignStateSetter object
 -----------------------------------
 
 MissionStarter = {}
@@ -26,9 +26,11 @@ end
 
 mainMissionStarter = MissionStarter:New()
 
-mainCampaignStateController = CampaignStateController:New()
+mainCampaignStateContainer = CampaignStateContainer:New()
 
 mainCampaignStateSetter:SetState()
+
+mainCampaignStateManager = CampaignStateManager:New(mainCampaignStateContainer)
 
 mainZoneGroupsSpawner = ZoneGroupsSpawner:New()
 mainZoneGroupsSpawner:SpawnAllGroups()

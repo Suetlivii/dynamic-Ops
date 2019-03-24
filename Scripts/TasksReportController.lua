@@ -44,7 +44,7 @@ end
 
 tasksReportController = TasksReportController:New()
 
-tasksReportController.isDebugMode = false
+tasksReportController.isDebugMode = true
 
 function ReportTasksCommand()
 

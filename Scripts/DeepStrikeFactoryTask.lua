@@ -8,7 +8,7 @@ TaskDeepStrike.taskName = "Deep Strike"
 TaskDeepStrike.localizedReport["En"] = 
 "DEEP STRIKE:\n" ..
 "Destroy the factory, check F10 map"
-TaskDeepStrike.taskCoalition = "Blue"
+TaskDeepStrike.taskCoalition = coalition.side.BLUE
 TaskDeepStrike.isFailCounts = true
 
 TaskDeepStrike:AddTaskToContainer(TaskDeepStrike)

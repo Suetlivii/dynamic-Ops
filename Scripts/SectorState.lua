@@ -1,5 +1,5 @@
 ------------
---SectorState contains sector information, list of all SectorStates stored in CampaignStateController.allSectorStates
+--SectorState contains sector information, list of all SectorStates stored in CampaignStateContainer.allSectorStates
 --Dependencies: Nothing
 ------------
 

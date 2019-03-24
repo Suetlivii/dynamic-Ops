@@ -1,6 +1,6 @@
 ----------
 --Controller that spawns all groups at mission start
---Dependencies: Moose, ZoneNameParser class, mainCampaignStateController object
+--Dependencies: Moose, ZoneNameParser class, mainCampaignStateContainer object
 ----------
 
 --ZoneGroupSpawner 
@@ -61,9 +61,15 @@ function ZoneGroupsSpawner:SpawnAllGroups()
         --tasksReportController:Debug(tempZoneNameParser:GetZoneFullPrefix())
         local zoneToSpawnSet = SET_ZONE:New():FilterPrefixes(tempZoneNameParser:GetZoneFullPrefix()):FilterOnce()
 
-        local spawnCoalition = mainCampaignStateController.allSectorStates[tonumber(tempZoneNameParser.sectorNumber)].sectorCoalition
+        local spawnCoalition = mainCampaignStateContainer.allSectorStates[tonumber(tempZoneNameParser.sectorNumber)].sectorCoalition
+
+        local spawnCoalitionString 
+
+        if spawnCoalition == coalition.side.RED then spawnCoalitionString = "Red" end
+        if spawnCoalition == coalition.side.BLUE then spawnCoalitionString = "Blue" end
+
         --tasksReportController:Debug(tempZoneNameParser.sectorNumber)
-        local groupToSpawnSet = SET_GROUP:New():FilterPrefixes(spawnCoalition .. tempZoneNameParser.groupPrefix):FilterOnce()
+        local groupToSpawnSet = SET_GROUP:New():FilterPrefixes(spawnCoalitionString .. tempZoneNameParser.groupPrefix):FilterOnce()
         local newSpawn = SPAWN:NewWithAlias( groupToSpawnSet:GetRandom():GetName(), tempZoneNameParser:GetZoneFullPrefix()):InitLimit(999, 999):SpawnInZone(zoneToSpawnSet:GetRandomZone())
     end
 

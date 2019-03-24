@@ -11,7 +11,8 @@ function TaskController:New()
         taskName = "default task name",
         localizedReport = {},
         taskCoalition = "",
-        isFailCounts = true
+        isFailCounts = true,
+        taskDifficulty = 1
     }
     self.__index = self
     return setmetatable(newObj, self)
