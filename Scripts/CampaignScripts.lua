@@ -56,6 +56,8 @@ function CampaignStateContainer:New()
     newObj = 
     {
         globalCampaignID = "noID",
+        defaultCampaignCoalition = coalition.side.BLUE,
+        isDifferentCoalitionReceiveTasks = false,
         isFirstLaunch = true,
         sessionsPlayed = 0,
         missionsCompleted = 0,
@@ -223,6 +225,61 @@ function TaskController:CancelTask()
     tasksReportController:Debug("TaskController:" .. self.taskName .. ": " .. "default CancelTask(). You have to overload method.")
 end
 
+-----------------------------------------------------------------------------------------------------------------------------------------------
+--Generic Destroy Late Activation Simple Respawn Group
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+DestroyLAGroupTaskController = {}
+
+function DestroyLAGroupTaskController:New()
+    self = TaskController:New()
+    DestroyLAGroupTaskController.laGroupName = ""
+    DestroyLAGroupTaskController.sectorID = -1
+    return self
+end
+
+function DestroyLAGroupTaskController:InitializeTask(_taskName, _localizedReport, _coalition, _isFailCounts, _taskDificulti, _laGroupName, _sectorID)
+    self.taskName = _taskName
+    self.localizedReport = _localizedReport
+    self.taskCoalition = _coalition
+    self.isFailCounts = _isFailCounts
+    self.taskDifficulty = _taskDificulti
+    self.laGroupName = _laGroupName
+    self.sectorID = _sectorID
+end
+
+function DestroyLAGroupTaskController:StartTask()
+    --tasksReportController:Debug("DestroyLAGroupTaskController:" .. self.taskName .. ": " .. "default StartTask(). You have to overload method.")
+    if self.laGroupName ~= "" and self.sectorID ~= -1 then 
+        self.StartDestroyTask(self.laGroupName, self.sectorID)
+    else
+        tasksReportController:Debug("DestroyLAGroupTaskController:StartTask(): " .. "laGroupName or sectorID is not initialized")
+    end
+end
+
+function DestroyLAGroupTaskController:StartDestroyTask(_LAGroupName, _sectorID)
+    local groupToSpawnName = LAGroupNameParser:New():GetRandomGroupByNameInSector(_LAGroupName, _sectorID)
+
+    if groupToSpawnName ~= nil and groupToSpawnName ~= "" then 
+        local targetGroup = SPAWN:New(groupToSpawnName):Spawn()
+
+        local targetCoord = targetGroup:GetCoordinate()
+        local markID = targetCoord:MarkToCoalitionBlue( self.taskName .. ": Target", true)
+
+        targetGroup:HandleEvent(EVENTS.Dead)
+
+        function targetGroup:OnEventDead( EventData )
+            self.localizedReport["En"] = 
+            self.taskName .. "\n" ..
+            "Target destoyed, mission completed"
+
+            self:ReportTask("En")
+        end
+
+    end
+end
+
+
 ------------------------------------------------------------------------------------------------------------------------------------------------
 --Utility that parse zone dcs full name and makes it easy to check zone parameters
 --Dependencies: Nothing
@@ -303,6 +360,29 @@ end
 function LAGroupNameParser:GetLAGroupFullName()
     local fullName = string.format("s<%s>cl<%s>st<%s>gn<%s>nm<%s>", self.sectorNumber, self.coalition, self.spawnType, self.groupName, self.groupNumber)
     return fullName
+end
+
+function LAGroupNameParser:GetRandomGroupByNameInSector(_groupName, _sectorID)
+
+    local allLAGroupsSet = SET_GROUP:New():FilterPrefixes("s<"):FilterOnce()
+    local allLAGroupsNames = allLAGroupsSet:GetSetNames()
+
+    local allFoundGroupsNames = {}
+
+    for i in ipairs(allLAGroupsNames) do
+        if string.find(allLAGroupsNames[i], _groupName) == true and string.find(allLAGroupsNames[i], "<s" .. _sectorID .. ">") == true then
+            table.insert( allFoundGroupsNames, allLAGroupsNames[i])
+        end
+    end
+
+    if #allFoundGroupsNames ~= 0 then 
+        local rndID = math.random( 1, #allFoundGroupsNames)
+        return allFoundGroupsNames[rndID]
+    else
+        tasksReportController:Debug("LAGroupNameParser:GetRandomGroupByNameInSector(): No groups with name and sector found!")
+        return nil
+    end
+
 end
 --LAGroupNameParser end
 

@@ -1,8 +1,8 @@
----------
+---------------------------------------------------------------------------------------------------------------------------------------------
 --CampaignStateSetter creates new CampaignStateContainer
 --Dependencies: mainCampaignStateContainer object of CampaignStateContainer
 --USE coalition.side.RED or coalition.side.BLUE !!!!
----------
+----------------------------------------------------------------------------------------------------------------------------------------------
 
 --CampaignStateSetter
 CampaignStateSetter = {}
@@ -21,9 +21,27 @@ function CampaignStateSetter:SetState()
 end
 --CampaignStateSetter end
 
+-----
+-- globalCampaignID = "noID",
+-- defaultCampaignCoalition = coalition.side.BLUE,
+-- isDifferentCoalitionReceiveTasks = false,
+-- isFirstLaunch = true,
+-- sessionsPlayed = 0,
+-- missionsCompleted = 0,
+-- missionsFailed = 0,
+-- missionsCanceled = 0,
+-- activeSector = 4,
+-- allSectorStates = {},
+-- allGroupStates = {},
+-- allZoneGroupStates = {}
+-----
+
 mainCampaignStateSetter = CampaignStateSetter:New()
 
 function mainCampaignStateSetter:SetState()
+
+    self.defaultCampaignCoalition = coalition.side.BLUE
+    self.isDifferentCoalitionReceiveTasks = false
 
     newAllSectorStates = 
     {

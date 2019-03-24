@@ -18,7 +18,7 @@ function MissionStarter:StartRandomTask()
     if #mainTasksContainer.allTasks > 0 then
         local randomTaskNum = math.random(1, #mainTasksContainer.allTasks)
         tasksReportController:Debug("MissionStarter:StartMission randomTaskNum = " .. randomTaskNum)
-        mainTasksContainer.allTasks[randomTaskNum]:StartTask()
+        mainTasksContainer.allTasks[randomTaskNum]:StartTask(mainCampaignStateContainer.defaultCampaignCoalition)
     else
         tasksReportController:Debug("MissionStarter:StartMission: No tasks, allTasks count is 0 ")
     end
