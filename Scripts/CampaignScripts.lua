@@ -173,6 +173,27 @@ end
 ----------------
 
 -------------------------------------------------------------------------------------------------------------------------------------------------
+-- TaskConfig
+-- Task Config need to customize task
+-- Every Task Contains one task config
+-------------------------------------------------------------------------------------------------------------------------------------------------
+TaskConfig = {}
+
+function TaskConfig:New()
+    newObj = 
+    {
+        taskName = "Default Task Config",
+        taskCoalition = coalition.side.BLUE,
+        taskDifficulty = 1,
+        isFailCounts = true,
+    }
+    self.__index = self
+    return setmetatable(newObj, self)
+end
+--TaskConfig END
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
 --TaskController - starting and controlling tasks progress, contains task brifieng
 --Dependencies: tasksReportController object, mainTasksContainer object 
 -------------------------------------------------------------------------------------------------------------------------------------------------
@@ -182,11 +203,8 @@ TaskController = {}
 function TaskController:New()
     newObj = 
     {
-        taskName = "default task name",
-        localizedReport = {},
-        taskCoalition = "",
-        isFailCounts = true,
-        taskDifficulty = 1
+        taskConfig = nil,
+        taskCurrentMessage = "Brief"
     }
     self.__index = self
     return setmetatable(newObj, self)
@@ -194,35 +212,31 @@ end
 
 function TaskController:AddTaskToContainer(task)
     mainTasksContainer:AddNewTask(task)
-    tasksReportController:Debug("TaskController:" .. task.taskName .. ": " .. " added.")
+    tasksReportController:Debug("TaskController:" .. task.taskConfig.taskName .. ": " .. " added.")
 end
 
 function TaskController:StartTask()
-    tasksReportController:Debug("TaskController:" .. self.taskName .. ": " .. "default StartTask(). You have to overload method.")
+    tasksReportController:Debug("TaskController:" .. self.taskConfig.taskName .. ": " .. "default StartTask(). You have to overload method.")
 end
 
-function TaskController:ReportTask(language)
-    if self == nil then 
-        tasksReportController:Debug("TaskController: task is nill")
-    end
-
-    if self.localizedReport[language] ~= nil and self.localizedReport[language] ~= "" then 
-        tasksReportController:ReportToAll( self.localizedReport[language] )
+function TaskController:ReportTask(_language)
+    if self.taskConfig ~= nil then 
+        tasksReportController:ReportToAll( MainTaskReportsData:GetReport(self.taskConfig.taskName, _language, self.taskCurrentMessage) )
     else
-        tasksReportController:Debug("TaskController:" .. self.taskName .. ": " .. "nil or empty message on ReportTask")
+        tasksReportController:Debug("TaskController:ReportTask(): taskConfig is null" )
     end
 end
 
 function TaskController:FinishTaskWin()
-    tasksReportController:Debug("TaskController:" .. self.taskName .. ": " .. "default FinishTaskWin(). You have to overload method.")
+    tasksReportController:Debug("TaskController:" .. self.taskConfig.taskName .. ": " .. "default FinishTaskWin(). You have to overload method.")
 end
 
 function TaskController:FinishTaskLose()
-    tasksReportController:Debug("TaskController:" .. self.taskName .. ": " .. "default FinishTaskLose(). You have to overload method.")
+    tasksReportController:Debug("TaskController:" .. self.taskConfig.taskName .. ": " .. "default FinishTaskLose(). You have to overload method.")
 end
 
 function TaskController:CancelTask()
-    tasksReportController:Debug("TaskController:" .. self.taskName .. ": " .. "default CancelTask(). You have to overload method.")
+    tasksReportController:Debug("TaskController:" .. self.taskConfig.taskName .. ": " .. "default CancelTask(). You have to overload method.")
 end
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
