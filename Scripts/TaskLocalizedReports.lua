@@ -103,6 +103,7 @@ trainStationStrikeLocalization.genericTaskReportsList.En.OnWin = "Enemy forces h
 trainStationStrikeLocalization.genericTaskReportsList.En.OnLost = "Enemy forces hasn't been destroyed. Task Failed!"
 trainStationStrikeLocalization.genericTaskReportsList.En.OnCanceled = "Task was canceled."
 
+trainStationStrikeLocalization.genericTaskReportsList.Ru = GenericTaskReports:New()
 trainStationStrikeLocalization.genericTaskReportsList.Ru.Brief = "Уничтожьте вражеские силы на железнодорожной станции."
 trainStationStrikeLocalization.genericTaskReportsList.Ru.OnWin = "Цель уничтожена, задание выполено."
 trainStationStrikeLocalization.genericTaskReportsList.Ru.OnLost = "Цель не была уничтожена, задание провалено."

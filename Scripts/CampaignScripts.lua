@@ -215,7 +215,7 @@ function TaskController:AddTaskToContainer(task)
     tasksReportController:Debug("TaskController:" .. task.taskConfig.taskName .. ": " .. " added.")
 end
 
-function TaskController:StartTask()
+function TaskController:StartTask(_taskCoalition)
     tasksReportController:Debug("TaskController:" .. self.taskConfig.taskName .. ": " .. "default StartTask(). You have to overload method.")
 end
 
@@ -240,58 +240,101 @@ function TaskController:CancelTask()
 end
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
+-- LAGroupDestroyTaskHelper
+--
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+-- LAGroupDestroyTaskHelper = {}
+
+-- function LAGroupDestroyTaskHelper:New()
+--     newObj = 
+--     {
+
+--     }
+--     self.__index = self
+--     return setmetatable(newObj, self)
+-- end
+
+-- function LAGroupDestroyTaskHelper:SpawnAndHandleLAGroup(_LAGroupName, _sectorID)
+--     local groupToSpawnName = LAGroupNameParser:New():GetRandomGroupByNameInSector(_LAGroupName, _sectorID)
+
+--     if groupToSpawnName ~= nil and groupToSpawnName ~= "" then 
+--         local targetGroup = SPAWN:New(groupToSpawnName):Spawn()
+
+--         local targetCoord = targetGroup:GetCoordinate()
+--         local markID = targetCoord:MarkToCoalitionBlue( self.taskName .. ": Target", true)
+
+--         targetGroup:HandleEvent(EVENTS.Dead)
+
+--         function targetGroup:OnEventDead( EventData )
+--             self.localizedReport["En"] = 
+--             self.taskName .. "\n" ..
+--             "Target destoyed, mission completed"
+
+--             self:ReportTask("En")
+--         end
+
+--     end
+-- end
+
+-- function LAGroupDestroyTaskHelper:OnLAGroupDestroyed()
+
+-- end
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
 --Generic Destroy Late Activation Simple Respawn Group
 -----------------------------------------------------------------------------------------------------------------------------------------------
 
-DestroyLAGroupTaskController = {}
+-- DestroyLAGroupTaskController = {}
 
-function DestroyLAGroupTaskController:New()
-    self = TaskController:New()
-    DestroyLAGroupTaskController.laGroupName = ""
-    DestroyLAGroupTaskController.sectorID = -1
-    return self
-end
+-- function DestroyLAGroupTaskController:New()
+--     self = TaskController:New()
+--     DestroyLAGroupTaskController.laGroupName = ""
+--     DestroyLAGroupTaskController.sectorID = -1
+--     return self
+-- end
 
-function DestroyLAGroupTaskController:InitializeTask(_taskName, _localizedReport, _coalition, _isFailCounts, _taskDificulti, _laGroupName, _sectorID)
-    self.taskName = _taskName
-    self.localizedReport = _localizedReport
-    self.taskCoalition = _coalition
-    self.isFailCounts = _isFailCounts
-    self.taskDifficulty = _taskDificulti
-    self.laGroupName = _laGroupName
-    self.sectorID = _sectorID
-end
+-- function DestroyLAGroupTaskController:InitializeTask(_taskName, _localizedReport, _coalition, _isFailCounts, _taskDificulti, _laGroupName, _sectorID)
+--     self.taskName = _taskName
+--     self.localizedReport = _localizedReport
+--     self.taskCoalition = _coalition
+--     self.isFailCounts = _isFailCounts
+--     self.taskDifficulty = _taskDificulti
+--     self.laGroupName = _laGroupName
+--     self.sectorID = _sectorID
+-- end
 
-function DestroyLAGroupTaskController:StartTask()
-    --tasksReportController:Debug("DestroyLAGroupTaskController:" .. self.taskName .. ": " .. "default StartTask(). You have to overload method.")
-    if self.laGroupName ~= "" and self.sectorID ~= -1 then 
-        self.StartDestroyTask(self.laGroupName, self.sectorID)
-    else
-        tasksReportController:Debug("DestroyLAGroupTaskController:StartTask(): " .. "laGroupName or sectorID is not initialized")
-    end
-end
+-- function DestroyLAGroupTaskController:StartTask()
+--     --tasksReportController:Debug("DestroyLAGroupTaskController:" .. self.taskName .. ": " .. "default StartTask(). You have to overload method.")
+--     if self.laGroupName ~= "" and self.sectorID ~= -1 then 
+--         self.StartDestroyTask(self.laGroupName, self.sectorID)
+--     else
+--         tasksReportController:Debug("DestroyLAGroupTaskController:StartTask(): " .. "laGroupName or sectorID is not initialized")
+--     end
+-- end
 
-function DestroyLAGroupTaskController:StartDestroyTask(_LAGroupName, _sectorID)
-    local groupToSpawnName = LAGroupNameParser:New():GetRandomGroupByNameInSector(_LAGroupName, _sectorID)
+-- function DestroyLAGroupTaskController:StartDestroyTask(_LAGroupName, _sectorID)
+--     local groupToSpawnName = LAGroupNameParser:New():GetRandomGroupByNameInSector(_LAGroupName, _sectorID)
 
-    if groupToSpawnName ~= nil and groupToSpawnName ~= "" then 
-        local targetGroup = SPAWN:New(groupToSpawnName):Spawn()
+--     if groupToSpawnName ~= nil and groupToSpawnName ~= "" then 
+--         local targetGroup = SPAWN:New(groupToSpawnName):Spawn()
 
-        local targetCoord = targetGroup:GetCoordinate()
-        local markID = targetCoord:MarkToCoalitionBlue( self.taskName .. ": Target", true)
+--         local targetCoord = targetGroup:GetCoordinate()
+--         local markID = targetCoord:MarkToCoalitionBlue( self.taskName .. ": Target", true)
 
-        targetGroup:HandleEvent(EVENTS.Dead)
+--         targetGroup:HandleEvent(EVENTS.Dead)
 
-        function targetGroup:OnEventDead( EventData )
-            self.localizedReport["En"] = 
-            self.taskName .. "\n" ..
-            "Target destoyed, mission completed"
+--         function targetGroup:OnEventDead( EventData )
+--             self.localizedReport["En"] = 
+--             self.taskName .. "\n" ..
+--             "Target destoyed, mission completed"
 
-            self:ReportTask("En")
-        end
+--             self:ReportTask("En")
+--         end
 
-    end
-end
+--     end
+-- end
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
