@@ -43,6 +43,103 @@ end
 --TasksReportController end
 
 
+-------------------------------------------------------------------------------------------------------------------------------------------------
+-- GenericTaskReports
+-- GenericTaskReports contains some generic messages for tasks, each GenericTaskReports have language
+
+-- .Brief = "Brief Default"
+-- .MapMarkText = "Target"
+-- .OnWin = "OnWin Default"
+-- .OnLost = "OnLost Default"
+-- .OnCanceled = "OnCanceled Default" 
+-- .AfterWin = "AfterWin Default"
+-- .AfterLose = "AfterLose Default"
+-- .AfterCanceled = "AfterCanceled Default" 
+-------------------------------------------------------------------------------------------------------------------------------------------------
+GenericTaskReports = {}
+
+function GenericTaskReports:New()
+    newObj = 
+    {
+        reportsList = 
+        {
+            TaskName = "TASK NAME",
+            Brief = "Brief Default",
+            MapMarkText = "Target",
+            OnWin = "Task completed.",
+            OnLost = "Task failed.",
+            OnCanceled = "Task canceled.",
+            AfterWin = "Task completed.",
+            AfterLose = "Task failed.",
+            AfterCanceled = "Task canceled." 
+        }
+    }
+    self.__index = self
+    return setmetatable(newObj, self)
+end
+--GenericTaskReports END
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+-- TaskLocalizationData
+-- TaskLocalizationData contains all tasks reports with different languages 
+-- En, Ru, De etc
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+TaskLocalizationData = {}
+
+function TaskLocalizationData:New()
+    newObj = 
+    {
+        taskName,
+        genericTaskReportsList = {}
+    }
+    self.__index = self
+    return setmetatable(newObj, self)
+end
+
+--TaskLocalizationData end
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+-- TaskReportsData
+--taskLocalizationDatasList[taskName].genericTaskReportsList[language].report
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+TaskReportsData = {}
+
+function TaskReportsData:New()
+    newObj = 
+    {
+        taskLocalizationDatasList = {}
+    }
+    self.__index = self
+    return setmetatable(newObj, self)
+end
+
+function TaskReportsData:GetReport(_taskName, _language, _report)
+    if self.taskLocalizationDatasList[_taskName].genericTaskReportsList[_language].reportsList[_report] ~= nil 
+    and self.taskLocalizationDatasList[_taskName].genericTaskReportsList[_language].reportsList[_report] ~= "" then
+        tasksReportController:Debug("TaskReportsData:GetReport(): taskName = " .. _taskName .. " language = " .. _language .. " report = " .. _report)
+        local returnReport = self.taskLocalizationDatasList[_taskName].genericTaskReportsList[_language].reportsList[_report]
+
+        if self.taskLocalizationDatasList[_taskName].genericTaskReportsList[_language].reportsList["TaskName"] ~= nil
+        and self.taskLocalizationDatasList[_taskName].genericTaskReportsList[_language].reportsList["TaskName"] ~= "" then
+            returnReport = self.taskLocalizationDatasList[_taskName].genericTaskReportsList[_language].reportsList["TaskName"] .. "\n" .. returnReport
+        end
+        return returnReport
+    end
+end
+
+function TaskReportsData:AddNewTaskLocalization(_taskName, _taskLocalizationData)
+    if _taskLocalizationData ~= nil then 
+        self.taskLocalizationDatasList[_taskName] = _taskLocalizationData
+    end
+end
+
+MainTaskReportsData = TaskReportsData:New()
+--TaskReportsData END
+
 ------------------------------------------------------------------------------------------------------------------------------------------------
 --Controlling Campaign State
 --Main Data Class
@@ -239,110 +336,81 @@ function TaskController:CancelTask()
     tasksReportController:Debug("TaskController:" .. self.taskConfig.taskName .. ": " .. "default CancelTask(). You have to overload method.")
 end
 
------------------------------------------------------------------------------------------------------------------------------------------------
--- LAGroupDestroyTaskHelper
---
------------------------------------------------------------------------------------------------------------------------------------------------
-
--- LAGroupDestroyTaskHelper = {}
-
--- function LAGroupDestroyTaskHelper:New()
---     newObj = 
---     {
-
---     }
---     self.__index = self
---     return setmetatable(newObj, self)
--- end
-
--- function LAGroupDestroyTaskHelper:SpawnAndHandleLAGroup(_LAGroupName, _sectorID)
---     local groupToSpawnName = LAGroupNameParser:New():GetRandomGroupByNameInSector(_LAGroupName, _sectorID)
-
---     if groupToSpawnName ~= nil and groupToSpawnName ~= "" then 
---         local targetGroup = SPAWN:New(groupToSpawnName):Spawn()
-
---         local targetCoord = targetGroup:GetCoordinate()
---         local markID = targetCoord:MarkToCoalitionBlue( self.taskName .. ": Target", true)
-
---         targetGroup:HandleEvent(EVENTS.Dead)
-
---         function targetGroup:OnEventDead( EventData )
---             self.localizedReport["En"] = 
---             self.taskName .. "\n" ..
---             "Target destoyed, mission completed"
-
---             self:ReportTask("En")
---         end
-
---     end
--- end
-
--- function LAGroupDestroyTaskHelper:OnLAGroupDestroyed()
-
--- end
-
-
------------------------------------------------------------------------------------------------------------------------------------------------
---Generic Destroy Late Activation Simple Respawn Group
------------------------------------------------------------------------------------------------------------------------------------------------
-
--- DestroyLAGroupTaskController = {}
-
--- function DestroyLAGroupTaskController:New()
---     self = TaskController:New()
---     DestroyLAGroupTaskController.laGroupName = ""
---     DestroyLAGroupTaskController.sectorID = -1
---     return self
--- end
-
--- function DestroyLAGroupTaskController:InitializeTask(_taskName, _localizedReport, _coalition, _isFailCounts, _taskDificulti, _laGroupName, _sectorID)
---     self.taskName = _taskName
---     self.localizedReport = _localizedReport
---     self.taskCoalition = _coalition
---     self.isFailCounts = _isFailCounts
---     self.taskDifficulty = _taskDificulti
---     self.laGroupName = _laGroupName
---     self.sectorID = _sectorID
--- end
-
--- function DestroyLAGroupTaskController:StartTask()
---     --tasksReportController:Debug("DestroyLAGroupTaskController:" .. self.taskName .. ": " .. "default StartTask(). You have to overload method.")
---     if self.laGroupName ~= "" and self.sectorID ~= -1 then 
---         self.StartDestroyTask(self.laGroupName, self.sectorID)
---     else
---         tasksReportController:Debug("DestroyLAGroupTaskController:StartTask(): " .. "laGroupName or sectorID is not initialized")
---     end
--- end
-
--- function DestroyLAGroupTaskController:StartDestroyTask(_LAGroupName, _sectorID)
---     local groupToSpawnName = LAGroupNameParser:New():GetRandomGroupByNameInSector(_LAGroupName, _sectorID)
-
---     if groupToSpawnName ~= nil and groupToSpawnName ~= "" then 
---         local targetGroup = SPAWN:New(groupToSpawnName):Spawn()
-
---         local targetCoord = targetGroup:GetCoordinate()
---         local markID = targetCoord:MarkToCoalitionBlue( self.taskName .. ": Target", true)
-
---         targetGroup:HandleEvent(EVENTS.Dead)
-
---         function targetGroup:OnEventDead( EventData )
---             self.localizedReport["En"] = 
---             self.taskName .. "\n" ..
---             "Target destoyed, mission completed"
-
---             self:ReportTask("En")
---         end
-
---     end
--- end
-
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 --Utility that parse zone dcs full name and makes it easy to check zone parameters
 --Dependencies: Nothing
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
---ZoneNameParser
+------------------------------------------------------------------------------------------------------------------------------------------------
+-- Generic Strike Task 
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+GenericStrikeTaskStartConfig = {}
+
+function GenericStrikeTaskStartConfig:New()
+    newObj = 
+    {
+        LAGroupName = "Default",
+        GroupRandomizeProbability = 0,
+        minLifePercent = 0.5,
+        MarkText = "Defaul" 
+    }
+    self.__index = self
+    return setmetatable(newObj, self)
+end
+
+GenericStrikeTask = TaskController:New()
+
+GenericDefaultTaskStartConfig = GenericStrikeTaskStartConfig:New()
+
+GenericStrikeTask.startConfig = GenericDefaultTaskStartConfig
+
+GenericStrikeTaskTaskConfig = TaskConfig:New()
+
+GenericStrikeTask.taskConfig = GenericStrikeTaskTaskConfig
+
+function GenericStrikeTask:StartTask(_taskCoalition)
+    
+    local enemyCoalition = 1 
+    local isTargetDestroyed
+
+    if _taskCoalition == 1 then enemyCoalition = 2 end
+
+    local frontSectorID = mainCampaignStateManager:GetFrontSectorID(enemyCoalition)
+    local groupName = LAGroupNameParser:GetRandomGroupByNameByCoalitionInSector(self.startConfig.LAGroupName, enemyCoalition, frontSectorID)
+    tasksReportController:Debug("Attempt to start task. LAGroupName = " .. self.startConfig.LAGroupName .. " taskColaition = " .. self.taskConfig.taskCoalition .. " sector = " .. frontSectorID)
+
+    local targetGroupSpawn = SPAWN:NewWithAlias( groupName, self.startConfig.LAGroupName )
+    targetGroup = targetGroupSpawn:ReSpawn()
+
+    local groupRandomizer = GroupRandomizer:New()
+    groupRandomizer:RandomizeGroup(targetGroup, self.startConfig.GroupRandomizeProbability)
+
+    targetGroup:HandleEvent(EVENTS.Hit)
+
+    function targetGroup:OnEventHit( EventData )
+        --self:FinishTaskWin()
+        tasksReportController:Debug("HIT! LifePercent is " .. targetGroup:GetLife())
+        if isTargetDestroyed == false and targetGroup:GetLife() <= (self.startConfig.minLifePercent + 1) then 
+            isTargetDestroyed = true
+            self.taskCurrentMessage = OnWin
+            self:ReportTask("En")
+        end
+    end
+
+    local targetCoord = targetGroup:GetCoordinate()
+    local markID = targetCoord:MarkToCoalitionBlue( self.startConfig.MarkText, true)
+
+    self:ReportTask("En")
+
+end
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+--  ZoneNameParser
+-------------------------------------------------------------------------------------------------------------------------------------------------
 ZoneNameParser = {}
 
 function ZoneNameParser:New()
