@@ -37,3 +37,4 @@ mainZoneGroupsSpawner:SpawnAllGroups()
 
 mainMissionStarter:StartRandomTask()
 
+

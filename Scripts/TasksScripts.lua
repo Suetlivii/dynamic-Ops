@@ -1,6 +1,9 @@
 ------------------------------------------------------------------------------------------------------------------------------------------------
 --DeepStrike task controller
 --Dependencies: TaskController class
+
+--BLUE is 2, RED is 1
+
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 ------------------------------------------------------
@@ -12,62 +15,113 @@
 -- isFailCounts = true
 ------------------------------------------------------
 
--- TaskDeepStrike = TaskController:New()
--- TaskDeepStrike.taskName = "Deep Strike"
--- TaskDeepStrike.localizedReport["En"] = 
--- "DEEP STRIKE:\n" ..
--- "Destroy the factory, check F10 map"
--- TaskDeepStrike.taskCoalition = coalition.side.BLUE
--- TaskDeepStrike.isFailCounts = true
+------------------------------------------------------------------------------------------------------------------------------------------------
+-- Generic Strike Task 
+------------------------------------------------------------------------------------------------------------------------------------------------
 
--- --TaskDeepStrike:AddTaskToContainer(TaskDeepStrike)
- 
--- function TaskDeepStrike:StartTask()
---     TaskDeepStrike:ReportTask("En")
+GenericStrikeTaskStartConfig = {}
 
---     local missionZoneSet = SET_ZONE:New()
---     missionZoneSet:FilterPrefixes( { "s<2>st<MissionRespawnUnable>zp<DeepStrikeFactory>gp<MissionTarget>" } )
---     missionZoneSet:FilterOnce()
+function GenericStrikeTaskStartConfig:New()
+    newObj = 
+    {
+        LAGroupName = "Default",
+        GroupRandomizeProbability = 0,
+        MarkText = "Defaul" 
+    }
+    self.__index = self
+    return setmetatable(newObj, self)
+end
 
---     local missionTargetSpawn = SPAWN:New( "RedMissionTarget" )
---     local missionTargetUnit = missionTargetSpawn:SpawnInZone( missionZoneSet:GetRandomZone() )
+GenericStrikeTask = TaskController:New()
 
---     local targetCoord = missionTargetUnit:GetCoordinate()
---     local markID = targetCoord:MarkToCoalitionBlue( "DEEP STRIKE: TARGET", true)
+GenericDefaultTaskStartConfig = GenericStrikeTaskStartConfig:New()
 
---     missionTargetUnit:HandleEvent(EVENTS.Dead)
+GenericStrikeTask.startConfig = GenericDefaultTaskStartConfig
 
---     function missionTargetUnit:OnEventDead( EventData )
+GenericStrikeTaskTaskConfig = TaskConfig:New()
 
---         TaskDeepStrike.localizedReport["En"] = 
---         "DEEP STRIKE:\n" ..
---         "Target destoyed, mission completed"
+GenericStrikeTask.taskConfig = GenericStrikeTaskTaskConfig
 
---         TaskDeepStrike:ReportTask("En")
+function GenericStrikeTask:StartTask(_taskCoalition)
+    
+    local enemyCoalition = 1 
 
---     end
+    if _taskCoalition == 1 then enemyCoalition = 2 end
 
--- end
+    local frontSectorID = mainCampaignStateManager:GetFrontSectorID(enemyCoalition)
+    local groupName = LAGroupNameParser:GetRandomGroupByNameByCoalitionInSector(self.startConfig.LAGroupName, enemyCoalition, frontSectorID)
+    tasksReportController:Debug("Attempt to start task. LAGroupName = " .. self.startConfig.LAGroupName .. " taskColaition = " .. self.taskConfig.taskCoalition .. " sector = " .. frontSectorID)
+
+    local targetGroupSpawn = SPAWN:NewWithAlias( groupName, self.startConfig.LAGroupName )
+    targetGroup = targetGroupSpawn:ReSpawn()
+
+    local groupRandomizer = GroupRandomizer:New()
+    groupRandomizer:RandomizeGroup(targetGroup, self.startConfig.GroupRandomizeProbability)
+
+    targetGroup:HandleEvent(EVENTS.Dead)
+
+    function targetGroup:OnEventDead( EventData )
+        self:FinishTaskWin()
+    end
+
+    local targetCoord = targetGroup:GetCoordinate()
+    local markID = targetCoord:MarkToCoalitionBlue( self.startConfig.MarkText, true)
+
+    self:ReportTask("En")
+
+end
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 --TrainStation Strike Task
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 trainStationTaskConfig = TaskConfig:New()
-
 trainStationTaskConfig.taskName = "trainStationStrike"
 
-StrikeTrainStationTask = TaskController:New()
+trainStationStrikeStartConfig = GenericStrikeTaskStartConfig:New()
+trainStationStrikeStartConfig.LAGroupName = "TrainStation"
+trainStationStrikeStartConfig.GroupRandomizeProbability = 0.5
+trainStationStrikeStartConfig.MarkText = "TRAIN STATION STRIKE TARGET"
 
-StrikeTrainStationTask.taskConfig = trainStationTaskConfig
+StrikeTrainStationTask = GenericStrikeTask:New()
 
-function StrikeTrainStationTask:StartTask(_taskCoalition)
-    local debugMsg = 
-    "STARTED TASK " .. self.taskConfig.taskName .. " with coalition " .. self.taskConfig.taskCoalition .. " difficulty is " .. self.taskConfig.taskDifficulty
-    tasksReportController:Debug(debugMsg)
-
-    
-
-end
+StrikeTrainStationTask.startConfig = trainStationStrikeStartConfig
 
 StrikeTrainStationTask:AddTaskToContainer(StrikeTrainStationTask)
+
+
+-- trainStationTaskConfig = TaskConfig:New()
+
+-- trainStationTaskConfig.taskName = "trainStationStrike"
+
+-- StrikeTrainStationTask = TaskController:New()
+
+-- StrikeTrainStationTask.taskConfig = trainStationTaskConfig
+
+-- function StrikeTrainStationTask:StartTask(_taskCoalition)
+--     local debugMsg = 
+--     "STARTED TASK " .. self.taskConfig.taskName .. " with coalition " .. self.taskConfig.taskCoalition .. " difficulty is " .. self.taskConfig.taskDifficulty
+--     tasksReportController:Debug(debugMsg)
+
+--     local trainStationGroupName = LAGroupNameParser:GetRandomGroupByNameByCoalitionInSector("TrainStation", coalition.side.RED, 4)
+--     tasksReportController:Debug(trainStationGroupName)
+
+--     local targetGroupSpawn = SPAWN:NewWithAlias( trainStationGroupName, "TrainStationTarget" )
+--     targetGroup = targetGroupSpawn:ReSpawn()
+
+--     local groupRandomizer = GroupRandomizer:New()
+--     groupRandomizer:RandomizeGroup(targetGroup, 0.5)
+
+--     targetGroup:HandleEvent(EVENTS.Dead)
+
+--     function targetGroup:OnEventDead( EventData )
+--         tasksReportController:Debug("TrainStationStrike DEAD!!")
+--     end
+
+--     local targetCoord = targetGroup:GetCoordinate()
+--     local markID = targetCoord:MarkToCoalitionBlue( "TRAIN STATION STRIKE: TARGET", true)
+
+--     self:ReportTask("En")
+-- end
+
+-- StrikeTrainStationTask:AddTaskToContainer(StrikeTrainStationTask)

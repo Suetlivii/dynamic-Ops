@@ -419,7 +419,7 @@ function LAGroupNameParser:GetLAGroupFullName()
     return fullName
 end
 
-function LAGroupNameParser:GetRandomGroupByNameInSector(_groupName, _sectorID)
+function LAGroupNameParser:GetRandomGroupByNameByCoalitionInSector(_groupName, _coalition, _sectorID)
 
     local allLAGroupsSet = SET_GROUP:New():FilterPrefixes("s<"):FilterOnce()
     local allLAGroupsNames = allLAGroupsSet:GetSetNames()
@@ -427,12 +427,13 @@ function LAGroupNameParser:GetRandomGroupByNameInSector(_groupName, _sectorID)
     local allFoundGroupsNames = {}
 
     for i in ipairs(allLAGroupsNames) do
-        if string.find(allLAGroupsNames[i], _groupName) == true and string.find(allLAGroupsNames[i], "<s" .. _sectorID .. ">") == true then
+        if string.match(allLAGroupsNames[i], _groupName) and string.match(allLAGroupsNames[i], "s<" .. _sectorID .. ">") and string.match(allLAGroupsNames[i], "cl<" .. _coalition .. ">") then
+            tasksReportController:Debug("LAGroupNameParser:GetRandomGroupByNameInSector: found group " .. allLAGroupsNames[i])
             table.insert( allFoundGroupsNames, allLAGroupsNames[i])
         end
     end
 
-    if #allFoundGroupsNames ~= 0 then 
+    if #allFoundGroupsNames > 0 then 
         local rndID = math.random( 1, #allFoundGroupsNames)
         return allFoundGroupsNames[rndID]
     else
@@ -530,6 +531,41 @@ function ZoneGroupsSpawner:AddZoneGroupToState(zoneFullName)
 end
 --ZoneGroupSpawner end
 
+-----------------------------------------------------------------------------------------------------------------------------------------------
+-- GroupRandomizer 
+-- Randomize Group with some probability
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+GroupRandomizer = {}
+
+function GroupRandomizer:New()
+    newObj = 
+    {
+        
+    }
+    self.__index = self
+    return setmetatable(newObj, self)
+end
+
+function GroupRandomizer:RandomizeGroup(_group, _probability)
+    local unitsList = _group:GetUnits()
+
+    if _probability == 0 then 
+        tasksReportController:Debug("GroupRandomizer:RandomizeGroup(): Probability = 0, return")
+        return nil
+    end
+
+    if #unitsList > 0 and _probability > 0 then
+        for i in ipairs(unitsList) do 
+            local rnd = math.random(0, 1)
+            if _probability <= rnd and i > 1 then 
+                unitsList[i]:Destroy()
+            end
+        end
+    else
+        tasksReportController:Debug("GroupRandomizer:RandomizeGroup(): Units list is nill or zero units")
+    end
+end
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
 --INITIALIZATION
