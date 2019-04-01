@@ -373,7 +373,8 @@ GenericStrikeTask.taskConfig = GenericStrikeTaskTaskConfig
 function GenericStrikeTask:StartTask(_taskCoalition)
     
     local enemyCoalition = 1 
-    local isTargetDestroyed
+    local isTargetDestroyed = false
+    local onStartUnitsCount = 0
 
     if _taskCoalition == 1 then enemyCoalition = 2 end
 
@@ -387,15 +388,22 @@ function GenericStrikeTask:StartTask(_taskCoalition)
     local groupRandomizer = GroupRandomizer:New()
     groupRandomizer:RandomizeGroup(targetGroup, self.startConfig.GroupRandomizeProbability)
 
+    onStartUnitsCount = #targetGroup:GetUnits()
+    local minLifePercent = self.startConfig.minLifePercent
+
+    local thisTask = self
+
     targetGroup:HandleEvent(EVENTS.Hit)
 
     function targetGroup:OnEventHit( EventData )
         --self:FinishTaskWin()
-        tasksReportController:Debug("HIT! LifePercent is " .. targetGroup:GetLife())
-        if isTargetDestroyed == false and targetGroup:GetLife() <= (self.startConfig.minLifePercent + 1) then 
+        local minUnitsCount = onStartUnitsCount * minLifePercent
+        tasksReportController:Debug("HIT! UnitsCount is " .. #targetGroup:GetUnits() .. " minUnitsCount is " .. minUnitsCount)
+        if isTargetDestroyed == false and #targetGroup:GetUnits() <= minUnitsCount then 
             isTargetDestroyed = true
-            self.taskCurrentMessage = OnWin
-            self:ReportTask("En")
+            thisTask.taskCurrentMessage = "OnWin"
+            thisTask:ReportTask("En")
+
         end
     end
 
@@ -640,7 +648,7 @@ end
 -----------------------------------------------------------------------------------------------------------------------------------------------
 tasksReportController = TasksReportController:New()
 
-tasksReportController.isDebugMode = true
+tasksReportController.isDebugMode = false
 
 function ReportTasksCommand()
 
