@@ -34,3 +34,23 @@ StrikeTrainStationTask.taskConfig = trainStationTaskConfig
 StrikeTrainStationTask.startConfig = trainStationStrikeStartConfig
 
 StrikeTrainStationTask:AddTaskToContainer(StrikeTrainStationTask)
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+-- MLRSStrike
+mlrsStrikeConfig = TaskConfig:New()
+mlrsStrikeConfig.taskName = "mlrsStrike"
+
+mlrsStrikeStartConfig = GenericStrikeTaskStartConfig:New()
+mlrsStrikeStartConfig.LAGroupName = "mlrsStrike"
+mlrsStrikeStartConfig.GroupRandomizeProbability = 0.8
+mlrsStrikeStartConfig.MarkText = "MLRS STRIKE TARGET"
+mlrsStrikeStartConfig.minLifePercent = 0.6
+
+mlrsStrikeTask = GenericStrikeTask:New()
+
+mlrsStrikeTask.taskConfig = mlrsStrikeConfig
+mlrsStrikeTask.startConfig = mlrsStrikeStartConfig
+
+mlrsStrikeTask:AddTaskToContainer(mlrsStrikeTask)
+-------------------------------------------------------------------------------------------------------------------------------------------------
