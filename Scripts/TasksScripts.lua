@@ -24,7 +24,7 @@ trainStationTaskConfig.taskName = "trainStationStrike"
 
 trainStationStrikeStartConfig = GenericStrikeTaskStartConfig:New()
 trainStationStrikeStartConfig.LAGroupName = "TrainStation"
-trainStationStrikeStartConfig.GroupRandomizeProbability = 0.5
+trainStationStrikeStartConfig.GroupRandomizeProbability = 0.75
 trainStationStrikeStartConfig.MarkText = "TRAIN STATION STRIKE TARGET"
 trainStationStrikeStartConfig.minLifePercent = 0.6
 

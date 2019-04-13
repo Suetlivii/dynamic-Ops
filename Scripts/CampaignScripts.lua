@@ -593,7 +593,7 @@ function ZoneGroupsSpawner:SpawnAllGroups()
 
         --tasksReportController:Debug(tempZoneNameParser.sectorNumber)
         local groupToSpawnSet = SET_GROUP:New():FilterPrefixes(spawnCoalitionString .. tempZoneNameParser.groupPrefix):FilterOnce()
-        local newSpawn = SPAWN:NewWithAlias( groupToSpawnSet:GetRandom():GetName(), tempZoneNameParser:GetZoneFullPrefix()):InitLimit(999, 999):SpawnInZone(zoneToSpawnSet:GetRandomZone())
+        local newSpawn = SPAWN:NewWithAlias( groupToSpawnSet:GetRandom():GetName(), tempZoneNameParser.groupPrefix .. ":" .. tempZoneNameParser.zonePrefix):InitLimit(999, 999):SpawnInZone(zoneToSpawnSet:GetRandomZone())
     end
 
 end

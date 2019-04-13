@@ -37,4 +37,4 @@ mainZoneGroupsSpawner:SpawnAllGroups()
 
 mainMissionStarter:StartRandomTask()
 
-
+SEADController = SEAD:New( {"AirdefenceRadarSamsite"} ) 
