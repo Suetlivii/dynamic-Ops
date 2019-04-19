@@ -19,6 +19,7 @@ function MissionStarter:StartRandomTask()
         local randomTaskNum = math.random(1, #mainTasksContainer.allTasks)
         tasksReportController:Debug("MissionStarter:StartMission randomTaskNum = " .. randomTaskNum)
         mainTasksContainer.allTasks[randomTaskNum]:StartTask(mainCampaignStateContainer.defaultCampaignCoalition)
+        mainTasksContainer:AddNewActiveTask(mainTasksContainer.allTasks[randomTaskNum])
     else
         tasksReportController:Debug("MissionStarter:StartMission: No tasks, allTasks count is 0 ")
     end
@@ -31,6 +32,9 @@ mainCampaignStateContainer = CampaignStateContainer:New()
 mainCampaignStateSetter:SetState()
 
 mainCampaignStateManager = CampaignStateManager:New(mainCampaignStateContainer)
+
+mainSectorZonesManager = SectorZonesManager:New()
+mainSectorZonesManager:InitializeZones()
 
 mainZoneGroupsSpawner = ZoneGroupsSpawner:New()
 mainZoneGroupsSpawner:SpawnAllGroups()

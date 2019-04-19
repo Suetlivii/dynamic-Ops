@@ -33,10 +33,10 @@ function TasksReportController:ReportToAll(msgString)
 end
 
 function TasksReportController:ReportAllTasks()
-    for i in ipairs(mainTasksContainer.allTasks) do
-        if mainTasksContainer.allTasks[i] ~= nil then 
+    for i in ipairs(mainTasksContainer.allActiveTasks) do
+        if mainTasksContainer.allActiveTasks[i] ~= nil then 
             tasksReportController:Debug("tasksReportController: trying to report task number " .. tostring(i))
-            mainTasksContainer.allTasks[i]:ReportTask("En")
+            mainTasksContainer.allActiveTasks[i]:ReportTask("En")
         end
     end
 end
@@ -237,8 +237,23 @@ function SectorState:New(_sectorID, _sectorCoalition, _requiredMissionCount)
     self.__index = self
     return setmetatable(newObj, self)
 end
-
 --SectorState end
+
+-- -----------------------------------------------------------------------------------------------------------------------------------------------
+-- -- GameSessionSettings
+-- -- 
+-- -----------------------------------------------------------------------------------------------------------------------------------------------
+
+-- GameSessionSettings = {}
+
+-- function GameSessionSettings:New()
+--     newObj = 
+--     {
+--         clientsCount = 0
+--     }
+--     self.__index = self
+--     return setmetatable(newObj, self)
+-- end
 
 -------------------------------------------------------------------------------------------------------------------------------------------------
 --TasksContainer - contains all tasks, start random task at mission start
@@ -250,7 +265,8 @@ TasksContainer = {}
 function TasksContainer:New()
     newObj = 
     {
-        allTasks = {}
+        allTasks = {},
+        allActiveTasks = {}
     }
     self.__index = self
     return setmetatable(newObj, self)
@@ -266,6 +282,10 @@ end
 
 function TasksContainer:AddNewTask(newTaskController)
     table.insert(self.allTasks, newTaskController)
+end
+
+function TasksContainer:AddNewActiveTask(newTaskController)
+    table.insert(self.allActiveTasks, newTaskController)
 end
 ----------------
 
@@ -455,6 +475,59 @@ end
 --ZoneNameParser end
 
 -------------------------------------------------------------------------------------------------------------------------------------------------
+--SectorZonesManager
+--
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+SectorZonesManager = {}
+
+function SectorZonesManager:New()
+    newObj = 
+    {
+        sectorZones = {}
+    }
+    self.__index = self
+    return setmetatable(newObj, self)
+end
+
+function SectorZonesManager:InitializeZones()
+    local tempSetGroup = SET_GROUP:New():FilterPrefixes("s<"):FilterOnce()
+    local tempSetNames = tempSetGroup:GetSetNames()
+
+    for i in ipairs(tempSetNames) do 
+        if string.match( tempSetNames[i], "SectorZone" ) then 
+            local sectorZoneNumber = string.match(tempSetNames[i], "s<(%d+)>")
+            local sectorZoneName = "s<" .. sectorZoneNumber .. ">st<SectorZone>"
+            --self.sectorZones[sectorZoneNumber] = ZONE_POLYGON:New( sectorZoneName, GROUP:FindByName( sectorZoneName ) )
+            table.insert( self.sectorZones , ZONE_POLYGON:New( sectorZoneName, GROUP:FindByName( sectorZoneName ) ) )
+            tasksReportController:Debug("SectorZonesManager:InitializeZones(): initialized SectorZone with name " .. sectorZoneName)
+        end
+    end
+
+end
+
+function SectorZonesManager:GetSectorZone(_sectorNumber)
+    local returnZone
+    for i in ipairs(self.sectorZones) do 
+        local parsedSectorNumber = string.match(self.sectorZones[i]:GetName(), "s<(%d+)>")
+
+        if tonumber(_sectorNumber) == tonumber(parsedSectorNumber) then 
+            returnZone = self.sectorZones[i]
+            break
+        end
+
+    end
+
+    if returnZone ~= nil then 
+        tasksReportController:Debug("SectorZonesManager:GetSectorZone: retrun zone with name " .. returnZone:GetName())
+        return returnZone
+    else
+        tasksReportController:Debug("SectorZonesManager:GetSectorZone: sectorZone with id " .. _sectorNumber .. " is nil")
+    end
+end
+--end SectorZonesManager
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
 --Utility that parse dcs late activate groups full name and makes it easy to check groups parameters
 --Dependencies: Nothing
 -------------------------------------------------------------------------------------------------------------------------------------------------
@@ -543,7 +616,7 @@ function ZoneGroupsSpawner:FindAllOnStartZones()
     local onStartZonesList = onStartZones:GetSetNames()
 
     for i in ipairs(onStartZonesList) do 
-        if string.find(onStartZonesList[i], "OnStart") == nil then
+        if string.match(onStartZonesList[i], "OnStart") == nil then
             --tasksReportController:Debug("removing " .. onStartZonesList[i])
             table.remove(onStartZonesList, i)
         end

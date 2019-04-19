@@ -13,15 +13,9 @@ local Detection = DETECTION_AREAS:New( DetectionSetGroup, 20000 )
 -- Setup the A2A dispatcher, and initialize it.
 local A2ADispatcher = AI_A2A_DISPATCHER:New( Detection )
 
-A2ADispatcher:SetDefaultGrouping(2)
-
-A2ADispatcher:SetDefaultOverhead(1)
-
-A2ADispatcher:SetEngageRadius( 100000 )
-
-A2ADispatcher:SetGciRadius( 200000 )
-
-ABBorderZone = ZONE_POLYGON:New( "AB", GROUP:FindByName( "RedBorderPlane" ) )
+--ABBorderZone = ZONE_POLYGON:New( "AB", GROUP:FindByName( "RedBorderPlane" ) )
+ABBorderZone = mainSectorZonesManager:GetSectorZone(mainCampaignStateManager:GetFrontSectorID(coalition.side.RED))
+--tasksReportController:Debug("CapGCIController: Squadron Cap Zone name is " .. ABBorderZone:GetName())
 A2ADispatcher:SetBorderZone( ABBorderZone )
 
 A2ADispatcher:SetSquadron( "mig29Sukhumi", AIRBASE.Caucasus.Sukhumi_Babushara, { "RedPlaneMilitaryFighterMig29s" }, 8 )
@@ -33,9 +27,17 @@ A2ADispatcher:SetSquadronTakeoffFromParkingHot( "su27Gudauta" )
 A2ADispatcher:SetSquadronLandingAtEngineShutdown( "mig29Sukhumi" )
 A2ADispatcher:SetSquadronLandingAtEngineShutdown( "su27Gudauta" )
 
-RUcapZone = ZONE:New( "RedCapZone")
-A2ADispatcher:SetSquadronCap( "mig29Sukhumi", RUcapZone, 600, 6500, 600, 800, 800, 1200, "RADIO" )
-A2ADispatcher:SetSquadronCapInterval( "mig29Sukhumi", 3, 600, 1200, 1 )
+A2ADispatcher:SetSquadronCap( "mig29Sukhumi", ABBorderZone, 600, 6500, 600, 800, 800, 1200, "RADIO" )
+tasksReportController:Debug("CapGCIController: Squadron Cap Zone name is " .. ABBorderZone:GetName())
+A2ADispatcher:SetSquadronCapInterval( "mig29Sukhumi", 3, 700, 900, 1 )
 
 A2ADispatcher:SetSquadronGci( "su27Gudauta", 900, 1200 )
-A2ADispatcher:SetSquadronGci( "mig29Sukhumi", 900, 1200 )
+--A2ADispatcher:SetSquadronGci( "mig29Sukhumi", 900, 1200 )
+
+A2ADispatcher:SetDefaultGrouping(2)
+
+A2ADispatcher:SetDefaultOverhead(0.5)
+
+A2ADispatcher:SetEngageRadius( 200000 )
+
+A2ADispatcher:SetGciRadius( 300000 )
