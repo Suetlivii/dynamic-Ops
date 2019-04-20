@@ -26,7 +26,7 @@ trainStationStrikeStartConfig = GenericStrikeTaskStartConfig:New()
 trainStationStrikeStartConfig.LAGroupName = "TrainStation"
 trainStationStrikeStartConfig.GroupRandomizeProbability = 0.75
 trainStationStrikeStartConfig.MarkText = "TRAIN STATION STRIKE TARGET"
-trainStationStrikeStartConfig.minLifePercent = 0.6
+trainStationStrikeStartConfig.minLifePercent = 0.9
 
 StrikeTrainStationTask = GenericStrikeTask:New()
 
@@ -45,7 +45,7 @@ mlrsStrikeStartConfig = GenericStrikeTaskStartConfig:New()
 mlrsStrikeStartConfig.LAGroupName = "mlrsStrike"
 mlrsStrikeStartConfig.GroupRandomizeProbability = 0.8
 mlrsStrikeStartConfig.MarkText = "MLRS STRIKE TARGET"
-mlrsStrikeStartConfig.minLifePercent = 0.6
+mlrsStrikeStartConfig.minLifePercent = 0.9
 
 mlrsStrikeTask = GenericStrikeTask:New()
 

@@ -1,43 +1,72 @@
--------------------------------
---CapGCIController controlls enemy aircrafts
+-----------------------------------------------------------------------------------------------------------------------------------------------
+-- GCIController
+-----------------------------------------------------------------------------------------------------------------------------------------------
+GCIController = {}
 
-DetectionSetGroup = SET_GROUP:New()
+function GCIController:New()
+    newObj = 
+    {
+        A2ADispatcher = nil,
+        borderZone = nil,
+        engageRadius = 300000,
+        gciRadius = 300000,
+        overhead = 1,
+        grouping = 2,
+        tacticalDisplay = false,
+        aircraftLimit = 8
+    }
+    self.__index = self
+    return setmetatable(newObj, self)
+end
 
-DetectionSetGroup:FilterPrefixes( { "AirdefenceRadarEwr" } )
-DetectionSetGroup:FilterStart()
+function GCIController:SetDispatcher()
+    --EWR SETUP
+    local DetectionSetGroup = SET_GROUP:New()
+    DetectionSetGroup:FilterPrefixes( { "AirdefenceRadarEwr" } )
+    DetectionSetGroup:FilterStart()
 
+    local Detection = DETECTION_AREAS:New( DetectionSetGroup, 30000 )
 
--- Setup the detection and group targets to a 30km range!
-local Detection = DETECTION_AREAS:New( DetectionSetGroup, 20000 )
+    --Dispatcher setup
+    if self.A2ADispatcher == nil then 
+        self.A2ADispatcher = AI_A2A_DISPATCHER:New( Detection )
+    end
 
--- Setup the A2A dispatcher, and initialize it.
-local A2ADispatcher = AI_A2A_DISPATCHER:New( Detection )
+    self.A2ADispatcher:SetEngageRadius( tonumber(self.engageRadius) )
+    self.A2ADispatcher:SetGciRadius( tonumber(self.gciRadius) )
 
---ABBorderZone = ZONE_POLYGON:New( "AB", GROUP:FindByName( "RedBorderPlane" ) )
-ABBorderZone = mainSectorZonesManager:GetSectorZone(mainCampaignStateManager:GetFrontSectorID(coalition.side.RED))
---tasksReportController:Debug("CapGCIController: Squadron Cap Zone name is " .. ABBorderZone:GetName())
-A2ADispatcher:SetBorderZone( ABBorderZone )
+    self.borderZone = mainSectorZonesManager:GetSectorZone(mainCampaignStateManager:GetFrontSectorID(coalition.side.RED))
 
-A2ADispatcher:SetSquadron( "mig29Sukhumi", AIRBASE.Caucasus.Sukhumi_Babushara, { "RedPlaneMilitaryFighterMig29s" }, 8 )
-A2ADispatcher:SetSquadron( "su27Gudauta", AIRBASE.Caucasus.Gudauta, { "RedPlaneMilitaryFighterSu27" }, 4 )
+    self.A2ADispatcher:SetBorderZone( self.borderZone )
+end
 
-A2ADispatcher:SetSquadronTakeoffFromParkingHot( "mig29Sukhumi" )
-A2ADispatcher:SetSquadronTakeoffFromParkingHot( "su27Gudauta" )
+function GCIController:StartCapGCI(_groupPrefix, _airField, _isCap, _isGCI)
+    local squadronName = "GCISquadron:" .. tostring(_airField) .. ":" .. tostring(_groupPrefix), _airField
 
-A2ADispatcher:SetSquadronLandingAtEngineShutdown( "mig29Sukhumi" )
-A2ADispatcher:SetSquadronLandingAtEngineShutdown( "su27Gudauta" )
+    self.A2ADispatcher:SetSquadron( squadronName, _airField, { _groupPrefix }, self.aircraftLimit )
+    self.A2ADispatcher:SetSquadronTakeoffFromParkingHot( squadronName )
+    self.A2ADispatcher:SetSquadronLandingAtEngineShutdown( squadronName )
 
-A2ADispatcher:SetSquadronCap( "mig29Sukhumi", ABBorderZone, 600, 6500, 600, 800, 800, 1200, "RADIO" )
-tasksReportController:Debug("CapGCIController: Squadron Cap Zone name is " .. ABBorderZone:GetName())
-A2ADispatcher:SetSquadronCapInterval( "mig29Sukhumi", 3, 700, 900, 1 )
+    if _isGCI == true then 
+        self.A2ADispatcher:SetSquadronGci( squadronName, 900, 1200 )
+    end
 
-A2ADispatcher:SetSquadronGci( "su27Gudauta", 900, 1200 )
---A2ADispatcher:SetSquadronGci( "mig29Sukhumi", 900, 1200 )
+    if _isCap == true then 
+        self.A2ADispatcher:SetSquadronCap( squadronName, self.borderZone, 600, 6500, 600, 800, 800, 1200, "RADIO" )
+        self.A2ADispatcher:SetSquadronCapInterval( squadronName, 1, 10, 15, 1 )
+    end
 
-A2ADispatcher:SetDefaultGrouping(2)
+    self.A2ADispatcher:SetSquadronGrouping(squadronName, self.grouping)
+    self.A2ADispatcher:SetSquadronOverhead(squadronName, self.overhead)
 
-A2ADispatcher:SetDefaultOverhead(0.5)
+    self.A2ADispatcher:Start()
+     
+    --tasksReportController:Debug("GCIController:StartGCI: Started GCI Squadron with name " .. squadronName .. " for border " .. borderZone:GetName() .. "GciRadius = " .. self.gciRadius .. " engage radius = " .. self.engageRadius)
+end
 
-A2ADispatcher:SetEngageRadius( 200000 )
+mainA2ADispatcher = GCIController:New()
+mainA2ADispatcher:SetDispatcher()
 
-A2ADispatcher:SetGciRadius( 300000 )
+mainA2ADispatcher:StartCapGCI("RedPlaneMilitaryFighterSu27", AIRBASE.Caucasus.Gudauta, false, true)
+
+mainA2ADispatcher:StartCapGCI("RedPlaneMilitaryFighterMig29s", AIRBASE.Caucasus.Sukhumi_Babushara, true, true)

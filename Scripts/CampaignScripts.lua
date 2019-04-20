@@ -303,6 +303,7 @@ function TaskConfig:New()
         taskCoalition = coalition.side.BLUE,
         taskDifficulty = 1,
         isFailCounts = true,
+        taskSpawnedNumber = nil
     }
     self.__index = self
     return setmetatable(newObj, self)
@@ -321,7 +322,8 @@ function TaskController:New()
     newObj = 
     {
         taskConfig = nil,
-        taskCurrentMessage = "Brief"
+        taskCurrentMessage = "Brief",
+        isCompleted = false
     }
     self.__index = self
     return setmetatable(newObj, self)
@@ -342,6 +344,10 @@ function TaskController:ReportTask(_language)
     else
         tasksReportController:Debug("TaskController:ReportTask(): taskConfig is null" )
     end
+end
+
+function TaskController:FinishTask()
+    
 end
 
 function TaskController:FinishTaskWin()
@@ -374,7 +380,8 @@ function GenericStrikeTaskStartConfig:New()
         LAGroupName = "Default",
         GroupRandomizeProbability = 0,
         minLifePercent = 0.5,
-        MarkText = "Defaul" 
+        MarkText = "Defaul",
+        sectorOffset = 0 
     }
     self.__index = self
     return setmetatable(newObj, self)
@@ -393,13 +400,22 @@ GenericStrikeTask.taskConfig = GenericStrikeTaskTaskConfig
 function GenericStrikeTask:StartTask(_taskCoalition)
     
     local enemyCoalition = 1 
-    local isTargetDestroyed = false
     local onStartUnitsCount = 0
 
     if _taskCoalition == 1 then enemyCoalition = 2 end
 
     local frontSectorID = mainCampaignStateManager:GetFrontSectorID(enemyCoalition)
-    local groupName = LAGroupNameParser:GetRandomGroupByNameByCoalitionInSector(self.startConfig.LAGroupName, enemyCoalition, frontSectorID)
+    local sectorWithOffset = frontSectorID + self.sectorOffset
+
+    if sectorWithOffset < 1 then 
+        sectorWithOffset = 1
+    end
+
+    if sectorWithOffset > #mainCampaignStateContainer.allSectorStates
+        sectorWithOffset = #mainCampaignStateContainer.allSectorStates
+    then
+
+    local groupName = LAGroupNameParser:GetRandomGroupByNameByCoalitionInSector(self.startConfig.LAGroupName, enemyCoalition, sectorWithOffset)
     tasksReportController:Debug("Attempt to start task. LAGroupName = " .. self.startConfig.LAGroupName .. " taskColaition = " .. self.taskConfig.taskCoalition .. " sector = " .. frontSectorID)
 
     local targetGroupSpawn = SPAWN:NewWithAlias( groupName, self.startConfig.LAGroupName )
@@ -413,17 +429,22 @@ function GenericStrikeTask:StartTask(_taskCoalition)
 
     local thisTask = self
 
+    thisTask.taskCurrentMessage = "Brief"
+    thisTask.isCompleted = false
+
     targetGroup:HandleEvent(EVENTS.Hit)
 
     function targetGroup:OnEventHit( EventData )
         --self:FinishTaskWin()
-        local minUnitsCount = onStartUnitsCount * minLifePercent
+        local minUnitsCount = math.ceil( onStartUnitsCount * minLifePercent )
         tasksReportController:Debug("HIT! UnitsCount is " .. #targetGroup:GetUnits() .. " minUnitsCount is " .. minUnitsCount)
-        if isTargetDestroyed == false and #targetGroup:GetUnits() <= minUnitsCount then 
-            isTargetDestroyed = true
+        if thisTask.isCompleted == false and #targetGroup:GetUnits() <= minUnitsCount then 
+            thisTask.isCompleted = true
             thisTask.taskCurrentMessage = "OnWin"
             thisTask:ReportTask("En")
-
+            if mainMissionStarter ~= nil then
+                mainMissionStarter:StartRandomTask()
+            end
         end
     end
 
@@ -724,10 +745,8 @@ tasksReportController = TasksReportController:New()
 tasksReportController.isDebugMode = false
 
 function ReportTasksCommand()
-
     tasksReportController:ReportAllTasks()
     tasksReportController:Debug("Report Task Pressed")
-
 end
 
 MenuTasks = MENU_MISSION:New("Tasks")
