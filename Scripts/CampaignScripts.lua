@@ -323,7 +323,8 @@ function TaskController:New()
     {
         taskConfig = nil,
         taskCurrentMessage = "Brief",
-        isCompleted = false
+        isCompleted = false,
+        mapMarksList = {}
     }
     self.__index = self
     return setmetatable(newObj, self)
@@ -369,6 +370,54 @@ end
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
+-- MapMark
+--
+------------------------------------------------------------------------------------------------------------------------------------------------
+MapMark = {}
+
+function MapMark:New()
+    newObj = 
+    {
+        markCoalition = nil,
+        markID = nil,
+        destroyGroup = nil
+    }
+    self.__index = self
+    return setmetatable(newObj, self)
+end
+
+function MapMark:CreateMark(_coalition, _textString, _vec2Coords)
+    if _coalition ~= nil and _textString ~= nil and _vec2Coords ~= nil then
+
+        if _coalition == coalition.side.RED then 
+            local markID = _vec2Coords:MarkToCoalitionRed( _textString, true)
+            self.markID = markID
+        end
+
+        if _coalition == coalition.side.BLUE then 
+            local markID = _vec2Coords:MarkToCoalitionBlue( _textString, true)
+            self.markID = markID
+        end
+
+    end
+end
+
+function MapMark:Destroy()
+    if self.markID ~= nil then 
+        RemoveMark(self.markID)
+    end
+end
+
+function MapMark:SetDestroyGroup(_group)
+    function targetGroup:OnEventDead( EventData )
+        self:Destroy()
+    end
+end
+--MapMark
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------
 -- Generic Strike Task 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -405,15 +454,15 @@ function GenericStrikeTask:StartTask(_taskCoalition)
     if _taskCoalition == 1 then enemyCoalition = 2 end
 
     local frontSectorID = mainCampaignStateManager:GetFrontSectorID(enemyCoalition)
-    local sectorWithOffset = frontSectorID + self.sectorOffset
+    local sectorWithOffset = frontSectorID + tonumber(self.startConfig.sectorOffset)
 
     if sectorWithOffset < 1 then 
         sectorWithOffset = 1
     end
 
-    if sectorWithOffset > #mainCampaignStateContainer.allSectorStates
+    if sectorWithOffset > #mainCampaignStateContainer.allSectorStates then
         sectorWithOffset = #mainCampaignStateContainer.allSectorStates
-    then
+    end
 
     local groupName = LAGroupNameParser:GetRandomGroupByNameByCoalitionInSector(self.startConfig.LAGroupName, enemyCoalition, sectorWithOffset)
     tasksReportController:Debug("Attempt to start task. LAGroupName = " .. self.startConfig.LAGroupName .. " taskColaition = " .. self.taskConfig.taskCoalition .. " sector = " .. frontSectorID)
@@ -449,7 +498,10 @@ function GenericStrikeTask:StartTask(_taskCoalition)
     end
 
     local targetCoord = targetGroup:GetCoordinate()
-    local markID = targetCoord:MarkToCoalitionBlue( self.startConfig.MarkText, true)
+    local targetMapMark = MapMark:New()
+    targetMapMark:CreateMark(_taskCoalition, self.startConfig.MarkText, targetCoord)
+    targetMapMark:SetDestroyGroup(targetGroup)
+    table.insert(self.mapMarksList, targetMapMark)
 
     self:ReportTask("En")
 
@@ -738,11 +790,45 @@ function GroupRandomizer:RandomizeGroup(_group, _probability)
 end
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
+-- MarkCommandController
+--
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+MarkCommandController = {}
+
+function MarkCommandController:New()
+    newObj = 
+    {
+        
+    }
+    self.__index = self
+    return setmetatable(newObj, self)   
+end
+
+function MarkCommandController:SetExplosion()
+    MarkRemovedEventHandler = EVENTHANDLER:New()
+    MarkRemovedEventHandler:HandleEvent(EVENTS.MarkRemoved)
+    function MarkRemovedEventHandler:OnEventMarkRemoved(EventData)
+        if EventData.text:lower():find("-exp") then
+            --tasksReportController:Debug("MarkCommandController:SetExplosion(): text is  " .. EventData.text)
+            local markText = string.match(EventData.text, "-exp<(%d+)>")
+            local vec3 = {y=EventData.pos.y, x=EventData.pos.z, z=EventData.pos.x}
+            --tasksReportController:Debug("MarkCommandController:SetExplosion(): exp force is " .. markText)
+            local coord = COORDINATE:NewFromVec3(vec3):Explosion(tonumber(markText))
+        end 
+    end
+end
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
 --INITIALIZATION
 -----------------------------------------------------------------------------------------------------------------------------------------------
 tasksReportController = TasksReportController:New()
 
-tasksReportController.isDebugMode = false
+tasksReportController.isDebugMode = true
+
+if tasksReportController.isDebugMode == true then 
+    debugMarkCommandController = MarkCommandController:New():SetExplosion()
+end
 
 function ReportTasksCommand()
     tasksReportController:ReportAllTasks()

@@ -17,6 +17,7 @@ end
 function MissionStarter:StartRandomTask()
     if #mainTasksContainer.allTasks > 0 then
         local randomTaskNum = math.random(1, #mainTasksContainer.allTasks)
+        local tempAllTasksList = mainTasksContainer.allTasks
         tasksReportController:Debug("MissionStarter:StartMission randomTaskNum = " .. randomTaskNum)
         mainTasksContainer.allTasks[randomTaskNum]:StartTask(mainCampaignStateContainer.defaultCampaignCoalition)
         table.remove( mainTasksContainer.allTasks, randomTaskNum )
