@@ -303,7 +303,8 @@ function TaskConfig:New()
         taskCoalition = coalition.side.BLUE,
         taskDifficulty = 1,
         isFailCounts = true,
-        taskSpawnedNumber = nil
+        taskSpawnedNumber = nil, --
+        playerVehicleType = "All" --Rw (rotary wing), Fw (fixed wing), Ca (combanied arms), All (all units)
     }
     self.__index = self
     return setmetatable(newObj, self)
@@ -404,12 +405,13 @@ end
 
 function MapMark:Destroy()
     if self.markID ~= nil then 
-        RemoveMark(self.markID)
+        COORDINATE:RemoveMark(self.markID)
     end
 end
 
 function MapMark:SetDestroyGroup(_group)
-    function targetGroup:OnEventDead( EventData )
+    _group:HandleEvent(EVENTS.Dead)
+    function _group:OnEventDead( EventData )
         self:Destroy()
     end
 end
@@ -471,39 +473,46 @@ function GenericStrikeTask:StartTask(_taskCoalition)
     targetGroup = targetGroupSpawn:ReSpawn()
 
     local groupRandomizer = GroupRandomizer:New()
-    groupRandomizer:RandomizeGroup(targetGroup, self.startConfig.GroupRandomizeProbability)
+    local unitsCount = groupRandomizer:RandomizeGroup(targetGroup, self.startConfig.GroupRandomizeProbability)
 
-    onStartUnitsCount = #targetGroup:GetUnits()
-    local minLifePercent = self.startConfig.minLifePercent
+    -- onStartUnitsCount = self.startConfig.minLifePercent * self.startConfig.GroupRandomizeProbability
+    -- local minLifePercent = self.startConfig.minLifePercent
 
     local thisTask = self
 
     thisTask.taskCurrentMessage = "Brief"
     thisTask.isCompleted = false
+    --thisTask.minUnitsCountPercent = math.ceil( thisTask.minUnitsCountPercent * #targetGroup:GetUnits() )
+    local minUnitsCount = math.ceil( thisTask.startConfig.minLifePercent * unitsCount )
 
-    targetGroup:HandleEvent(EVENTS.Hit)
+    local targetCoord = targetGroup:GetCoordinate()
+    local targetMapMark = MapMark:New()
+    targetMapMark:CreateMark(_taskCoalition, self.startConfig.MarkText, targetCoord)
+    table.insert(self.mapMarksList, targetMapMark)
 
-    function targetGroup:OnEventHit( EventData )
+    targetGroup:HandleEvent(EVENTS.Dead)
+    function targetGroup:OnEventDead( EventData )
         --self:FinishTaskWin()
-        local minUnitsCount = math.ceil( onStartUnitsCount * minLifePercent )
+        
         tasksReportController:Debug("HIT! UnitsCount is " .. #targetGroup:GetUnits() .. " minUnitsCount is " .. minUnitsCount)
         if thisTask.isCompleted == false and #targetGroup:GetUnits() <= minUnitsCount then 
             thisTask.isCompleted = true
             thisTask.taskCurrentMessage = "OnWin"
             thisTask:ReportTask("En")
+
+            for i in ipairs(thisTask.mapMarksList) do 
+                if thisTask.mapMarksList[i] ~= nil then 
+                    thisTask.mapMarksList[i]:Destroy()
+                end
+            end
+
             if mainMissionStarter ~= nil then
                 mainMissionStarter:StartRandomTask()
             end
         end
     end
 
-    local targetCoord = targetGroup:GetCoordinate()
-    local targetMapMark = MapMark:New()
-    targetMapMark:CreateMark(_taskCoalition, self.startConfig.MarkText, targetCoord)
-    targetMapMark:SetDestroyGroup(targetGroup)
-    table.insert(self.mapMarksList, targetMapMark)
-
-    self:ReportTask("En")
+    thisTask:ReportTask("En")
 
 end
 -------------------------------------------------------------------------------------------------------------------------------------------------
@@ -511,6 +520,13 @@ end
 
 -------------------------------------------------------------------------------------------------------------------------------------------------
 --  ZoneNameParser
+-- Properties:
+--  sectorNumber
+--  spawnType 
+--  zonePrefix
+--  groupPrefix
+--  zoneNumber
+--  
 -------------------------------------------------------------------------------------------------------------------------------------------------
 ZoneNameParser = {}
 
@@ -583,7 +599,6 @@ function SectorZonesManager:GetSectorZone(_sectorNumber)
     local returnZone
     for i in ipairs(self.sectorZones) do 
         local parsedSectorNumber = string.match(self.sectorZones[i]:GetName(), "s<(%d+)>")
-
         if tonumber(_sectorNumber) == tonumber(parsedSectorNumber) then 
             returnZone = self.sectorZones[i]
             break
@@ -688,8 +703,12 @@ function ZoneGroupsSpawner:FindAllOnStartZones()
     local onStartZones = SET_ZONE:New():FilterPrefixes("s<"):FilterOnce()
     local onStartZonesList = onStartZones:GetSetNames()
 
+    local zoneNameParser = ZoneNameParser:New()
+
     for i in ipairs(onStartZonesList) do 
-        if string.match(onStartZonesList[i], "OnStart") == nil then
+        zoneNameParser:Parse(onStartZonesList[i])
+        --if string.match(onStartZonesList[i], "OnStart") == nil then
+        if zoneNameParser.spawnType ~= "OnStartGroupRespawnUnable" then
             --tasksReportController:Debug("removing " .. onStartZonesList[i])
             table.remove(onStartZonesList, i)
         end
@@ -744,6 +763,8 @@ function ZoneGroupsSpawner:SpawnAllGroups()
 
 end
 
+
+
 function ZoneGroupsSpawner:SpawnGroup(zoneFullName)
 
 end
@@ -777,13 +798,21 @@ function GroupRandomizer:RandomizeGroup(_group, _probability)
         return nil
     end
 
+    if _probability == 1 then 
+        tasksReportController:Debug("GroupRandomizer:RandomizeGroup(): Probability = 1, return")
+        return #unitsList
+    end
+
     if #unitsList > 0 and _probability > 0 then
+        local destroyedCount = 0
         for i in ipairs(unitsList) do 
             local rnd = math.random(0, 1)
             if _probability <= rnd and i > 1 then 
                 unitsList[i]:Destroy()
+                destroyedCount = destroyedCount + 1
             end
         end
+        return #unitsList - destroyedCount
     else
         tasksReportController:Debug("GroupRandomizer:RandomizeGroup(): Units list is nill or zero units")
     end
@@ -819,6 +848,21 @@ function MarkCommandController:SetExplosion()
     end
 end
 
+function MarkCommandController:SetSpawn()
+    MarkRemovedEventHandler = EVENTHANDLER:New()
+    MarkRemovedEventHandler:HandleEvent(EVENTS.MarkRemoved)
+    function MarkRemovedEventHandler:OnEventMarkRemoved(EventData)
+        if EventData.text:lower():find("-spawn") then
+            --tasksReportController:Debug("MarkCommandController:SetExplosion(): text is  " .. EventData.text)
+            local markText = string.match(EventData.text, "-spawn<(%a+)>")
+            local vec3 = {y=EventData.pos.y, x=EventData.pos.z, z=EventData.pos.x}
+            local coord = COORDINATE:NewFromVec3(vec3)
+            --tasksReportController:Debug("MarkCommandController:SetExplosion(): exp force is " .. markText)
+            local spawn = SPAWN:New(markText):SpawnFromVec2(coord:GetVec2())
+        end 
+    end
+end
+
 -----------------------------------------------------------------------------------------------------------------------------------------------
 --INITIALIZATION
 -----------------------------------------------------------------------------------------------------------------------------------------------
@@ -827,7 +871,8 @@ tasksReportController = TasksReportController:New()
 tasksReportController.isDebugMode = true
 
 if tasksReportController.isDebugMode == true then 
-    debugMarkCommandController = MarkCommandController:New():SetExplosion()
+    debugMarkCommandControllerExp = MarkCommandController:New():SetExplosion()
+    debugMarkCommandControllerSPawn = MarkCommandController:New():SetSpawn()
 end
 
 function ReportTasksCommand()
