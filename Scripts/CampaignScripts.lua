@@ -519,6 +519,88 @@ end
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------------
+-- Generic Zone Parser
+--
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+GenericZoneParser = {}
+
+function GenericZoneParser:New()
+    newObj = 
+    {
+        sectorID = nil, -- s<1>
+        mgrs = nil, -- mg<gh56>
+        type = nil, -- tp<forest> (forest, field, town, road)
+        frontLine = nil, -- fl<1> (1 - left side, 2 - right side)
+        frontDistance = nil -- fd<1> (1 * 5nm, 3 = 15nm)
+    }
+    self.__index = self
+    return setmetatable(newObj, self)
+end
+
+function GenericZoneParser:Parse(zoneFullName)
+    self.sectorID = string.match(zoneFullName, "s<(%d+)>")
+    self.mgrs = string.match(zoneFullName, "mg<(%a+)>")
+    self.type = string.match(zoneFullName, "tp<(%a+)>")
+    self.frontLine = string.match(zoneFullName, "fl<(%d+)>")
+    self.frontDistance = string.match(zoneFullName, "fd<(%d+)>")
+end
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+-- GenericZoneSetParser
+--
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+GenericZoneSetParser = {}
+
+function GenericZoneSetParser:New()
+    newObj = 
+    {
+        setList = {}
+    }
+    self.__index = self
+    return setmetatable(newObj, self)
+end
+
+function GenericZoneSetParser:SetNew()
+    self.setList = SET_ZONE:New():FilterPrefixes("gz:"):FilterOnce()
+end
+
+function GenericZoneSetParser:AddToSet(_setProperty, _value)
+    local tempSet = SET_ZONE:New():FilterPrefixes("gz"):FilterOnce()
+    local tempSetNames = tempSet:GetSetNames()
+    local property = _setProperty .. "<" .. _value .. ">"
+    tasksReportController:Debug("Adding zone with prop " .. property)
+    for i in ipairs(tempSetNames) do 
+        if string.match(tempSetNames[i], property) ~= nil then 
+            tasksReportController:Debug("Insert zone " .. tempSetNames[i])
+            table.insert( self.setList, tempSetNames[i]) 
+        end
+    end
+end
+
+function GenericZoneSetParser:FilterSet(_setProperty, _value)
+    local tempSet = self.setList
+    local property = _setProperty .. "<" .. _value .. ">"
+    for i in ipairs(tempSet) do 
+        if string.match(tempSet[i], property) == nil then
+            table.remove( self.setList, tempSet[i] )
+        end
+    end
+end
+
+function GenericZoneSetParser:GetRandomZoneName()
+    if self.setList ~= nil or #self.setList ~= 0 then 
+        local rnd = math.random(1, #self.setList)
+        return self.setList[rnd]
+    else
+        return nil
+    end
+end
+-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
 --  ZoneNameParser
 -- Properties:
 --  sectorNumber

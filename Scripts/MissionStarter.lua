@@ -38,9 +38,17 @@ mainCampaignStateManager = CampaignStateManager:New(mainCampaignStateContainer)
 mainSectorZonesManager = SectorZonesManager:New()
 mainSectorZonesManager:InitializeZones()
 
-mainZoneGroupsSpawner = ZoneGroupsSpawner:New()
-mainZoneGroupsSpawner:SpawnAllGroups()
+--mainZoneGroupsSpawner = ZoneGroupsSpawner:New()
+--mainZoneGroupsSpawner:SpawnAllGroups()
 
 mainMissionStarter:StartRandomTask()
 
 SEADController = SEAD:New( {"AirdefenceRadarSamsite"} ) 
+
+testGenerizZoneSetParser = GenericZoneSetParser:New()
+testGenerizZoneSetParser:AddToSet("tp", "forest")
+testGenerizZoneSetParser:AddToSet("tp", "road")
+
+for i in ipairs(testGenerizZoneSetParser.setList) do 
+    tasksReportController:Debug("CREATING MARK FOR ZONE " .. testGenerizZoneSetParser.setList[i])
+end
