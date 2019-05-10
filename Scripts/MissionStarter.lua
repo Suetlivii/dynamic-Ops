@@ -52,7 +52,11 @@ mainGenericZoneManager:UpdateZonesCoalitions()
 
 mainFrontlineHandler:AddOnFrontlineChangeListener(mainGenericZoneManager, "UpdateZonesCoalitions")
 
-mainFrontlineHandler:MoveFrontline(-20000)
+blueCombatScoreManager = CombatScoreManager:New(2)
+
+blueCombatScoreManager:AddUnitsScoreConfig(mainCombatScoreUnitsConfig)
+blueCombatScoreManager:StartScoring()
+
 
 -- SEADController = SEAD:New( {"AirdefenceRadarSamsite"} ) 
 

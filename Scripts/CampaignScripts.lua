@@ -991,7 +991,7 @@ end
 
 function FrontLineHandler:MoveFrontline(_moveDistance)
     self.currentFrontlineRange = self.currentFrontlineRange + _moveDistance
-    
+
     self:InvokeOnFrontlineChanged()
 end
 
@@ -1108,6 +1108,84 @@ function GenericZoneManager:UpdateZonesCoalitions()
 end
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+-- CombatScoreUnitsConfig
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+CombatScoreUnitsConfig = {}
+
+function CombatScoreUnitsConfig:New()
+    newObj = 
+    {
+        configName = "",
+        unitsScoreCost = {}
+    }
+    self.__index = self
+    return setmetatable(newObj, self)  
+end
+
+function CombatScoreUnitsConfig:GetUnitScoreCost(_unitName)
+    if self.unitsScoreCost[_unitName] ~= nil then 
+        return self.unitsScoreCost[_unitName]
+    end
+end
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+-- CombatScoreManager
+-----------------------------------------------------------------------------------------------------------------------------------------------
+CombatScoreManager = {}
+
+function CombatScoreManager:New(_coalition, score)
+    newObj = 
+    {
+        coalition = _coalition,
+
+        unitScoreCostConfigsList = {}
+    }
+    self.__index = self
+    return setmetatable(newObj, self)  
+end
+
+function CombatScoreManager:AddUnitsScoreConfig(_newConfig)
+    table.insert( self.unitScoreCostConfigsList, _newConfig )
+end
+
+function CombatScoreManager:GetUnitScoreCost(_unitName)
+    for i in ipairs(self.unitScoreCostConfigsList) do 
+        if self.unitScoreCostConfigsList[i]:GetUnitScoreCost(_unitName) ~= nil then
+            tasksReportController:Debug("CombatScoreManager:GetUnitScoreCost(): found unitType with score " .. self.unitScoreCostConfigsList[i]:GetUnitScoreCost(_unitName))
+            return self.unitScoreCostConfigsList[i]:GetUnitScoreCost(_unitName)
+        else
+            tasksReportController:Debug("CombatScoreManager:GetUnitScoreCost(): nothing found, return nil")
+            return nil
+        end
+    end
+end
+
+function CombatScoreManager:MessageToKillerGroup(_groupName, _score)
+    group = GROUP:FindByName(_groupName)
+    if group ~= nil then 
+        MESSAGE:New(tostring(_score), 10, "+", false):ToGroup(group)
+    end
+end
+
+function CombatScoreManager:StartScoring()
+    local DeadEventHandler = EVENTHANDLER:New()
+    DeadEventHandler:HandleEvent(EVENTS.Dead)
+
+    local thisObj = self
+
+    tasksReportController:Debug("Test config value is " .. self:GetUnitScoreCost("Tu-22M3"))
+
+    function DeadEventHandler:OnEventDead(EventData)
+        --local score = thisObj:GetUnitScoreCost(EventData.IniTypeName)
+        tasksReportController:Debug("Group named" .. EventData.IniDCSGroupName .. " got score ")
+    end
+end
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
 --INITIALIZATION
