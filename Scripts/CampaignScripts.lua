@@ -1142,7 +1142,8 @@ function CombatScoreManager:New(_coalition, score)
     {
         coalition = _coalition,
 
-        unitScoreCostConfigsList = {}
+        unitScoreCostConfigsList = {},
+        lastHitsList = {}
     }
     self.__index = self
     return setmetatable(newObj, self)  
@@ -1150,6 +1151,18 @@ end
 
 function CombatScoreManager:AddUnitsScoreConfig(_newConfig)
     table.insert( self.unitScoreCostConfigsList, _newConfig )
+end
+
+function CombatScoreManager:AddHitData(_iniGroupName, _tgtUnitName)
+    self.lastHitsList[_tgtUnitName] = _iniGroupName
+end
+
+function CombatScoreManager:GetKillInitiator(_unitName)
+    if self.lastHitsList[_unitName] ~= nil then 
+        local killer = self.lastHitsList[_unitName]
+        self.lastHitsList[_unitName] = nil 
+        return killer
+    end
 end
 
 function CombatScoreManager:GetUnitScoreCost(_unitName)
@@ -1167,7 +1180,8 @@ end
 function CombatScoreManager:MessageToKillerGroup(_groupName, _score)
     group = GROUP:FindByName(_groupName)
     if group ~= nil then 
-        MESSAGE:New(tostring(_score), 10, "+", false):ToGroup(group)
+        local msg = "+" .. _score
+        MESSAGE:New(tostring(msg), 10, false):ToGroup(group)
     end
 end
 
@@ -1175,13 +1189,24 @@ function CombatScoreManager:StartScoring()
     local DeadEventHandler = EVENTHANDLER:New()
     DeadEventHandler:HandleEvent(EVENTS.Dead)
 
+    local HitEventHandler = EVENTHANDLER:New()
+    HitEventHandler:HandleEvent(EVENTS.Hit)
+
     local thisObj = self
 
     tasksReportController:Debug("Test config value is " .. self:GetUnitScoreCost("Tu-22M3"))
 
+    function HitEventHandler:OnEventHit(EventData)
+        thisObj:AddHitData(EventData.IniGroupName, EventData.TgtUnitName)
+    end
+
     function DeadEventHandler:OnEventDead(EventData)
-        --local score = thisObj:GetUnitScoreCost(EventData.IniTypeName)
-        tasksReportController:Debug("Group named" .. EventData.IniDCSGroupName .. " got score ")
+        local killerName = thisObj:GetKillInitiator(EventData.IniUnitName)
+        if killerName ~= nil then 
+            local score = thisObj:GetUnitScoreCost(EventData.IniTypeName)
+            tasksReportController:Debug("Group named " .. killerName .. " got score " .. score)
+            thisObj:MessageToKillerGroup(killerName, score)
+        end
     end
 end
 -----------------------------------------------------------------------------------------------------------------------------------------------
