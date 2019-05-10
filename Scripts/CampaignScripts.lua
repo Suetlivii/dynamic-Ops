@@ -25,6 +25,7 @@ end
 function TasksReportController:Debug(msgString)
     if self.isDebugMode == true then
         newDebugMessage = MESSAGE:New(tostring(msgString .. "\n"), 10, "DEBUG", false):ToAll()
+        BASE:E(tostring(msgString))
     end
 end
 
@@ -944,6 +945,169 @@ function MarkCommandController:SetSpawn()
         end 
     end
 end
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+-- FrontLineHandler
+
+--object front distance
+-- frontline = 1
+-- far = 2
+-----------------------------------------------------------------------------------------------------------------------------------------------
+FrontLineHandler = {}
+
+function FrontLineHandler:New(_coalition, _minRange, _maxRange, _defaultFrontlineRange, _defaultFrontDeep)
+    newObj = 
+    {
+        acnhorZone = nil,
+        anchorEndZone = nil,
+        managerCoalition = _coalition,
+        minRange = _minRange,
+        maxRange = _maxRange,
+        defaultFrontlineRange = _defaultFrontlineRange,
+        currentFrontlineRange = _defaultFrontlineRange,
+        defaultFrontDeep = _defaultFrontDeep,
+        currentFrontDeep = _defaultFrontDeep,
+        onFrontlineChangedListeners = {}
+    }
+    self.__index = self
+    return setmetatable(newObj, self)  
+end
+
+function FrontLineHandler:AddOnFrontlineChangeListener(_listener, _functionName)
+    self.onFrontlineChangedListeners[_listener] = _functionName
+end
+
+function FrontLineHandler:RemoveOnFrontlineChangeListener(_listener)
+    table.remove( self.onFrontlineChangedListeners, _listener )
+end
+
+function FrontLineHandler:InvokeOnFrontlineChanged()
+    for k, v in pairs(self.onFrontlineChangedListeners) do 
+        local funcName = tostring(v)
+        k[funcName](k)
+    end
+end
+
+function FrontLineHandler:MoveFrontline(_moveDistance)
+    self.currentFrontlineRange = self.currentFrontlineRange + _moveDistance
+    
+    self:InvokeOnFrontlineChanged()
+end
+
+function FrontLineHandler:SetAnchors(_anchorZoneName, _anchorEndZoneName)
+    self.acnhorZone = ZONE:New(_anchorZoneName)
+    self.anchorEndZone = ZONE:New(_anchorEndZoneName)
+end
+
+function FrontLineHandler:GetDistanceToZone(_zoneName)
+    local tempZone = ZONE:New(_zoneName) 
+    return self.acnhorZone:GetPointVec2():Get2DDistance(tempZone:GetPointVec2())
+end
+
+function FrontLineHandler:GetZoneCoalition(_zoneName, _distance)
+    local tempZone = ZONE:New(_zoneName)
+    local distance
+
+    if _distance == nil then 
+        distance = self:GetDistanceToZone(_zoneName)
+    else
+        distance = _distance
+    end
+
+    local enemyCoalition = 1
+
+    if self.managerCoalition == 1 then enemyCoalition = 2 end 
+    if self.managerCoalition == 2 then enemyCoalition = 1 end 
+
+    if distance >= self.currentFrontlineRange then 
+        return enemyCoalition
+    else
+        return self.managerCoalition
+    end
+end
+
+function FrontLineHandler:GetIsZoneAtFrontline(_zoneName, _distance)
+    local tempZone = ZONE:New(_zoneName)
+    local distance
+
+    if _distance == nil then 
+        distance = self:GetDistanceToZone(_zoneName)
+    else
+        distance = _distance
+    end
+
+    if distance <= (self.currentFrontlineRange + self.currentFrontDeep) and distance >= (self.currentFrontlineRange - self.currentFrontDeep) then
+        return true
+    else
+        return false
+    end
+end
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+-- GenericZoneManager
+-----------------------------------------------------------------------------------------------------------------------------------------------
+GenericZoneManager = {}
+
+function GenericZoneManager:New(_coalition, _frontlineHandler)
+    newObj = 
+    {
+        coalition = _coalition,
+        allGenericZonesList = {},
+        allFriendlyZonesList = {},
+        allFriendlyFrontZonesList = {},
+        allEnemyZonesList = {},
+        allEnemyFrontZonesList = {},
+        frontlineHandler = _frontlineHandler
+    }
+    self.__index = self
+    return setmetatable(newObj, self)  
+end
+
+function GenericZoneManager:SetGenericZones(_genericZonePrefix)
+    local tempList = SET_ZONE:New():FilterPrefixes( _genericZonePrefix ):FilterOnce()
+    local tempNamesList = tempList:GetSetNames()
+
+    for i in ipairs(tempNamesList) do 
+        local distance = self.frontlineHandler:GetDistanceToZone(tempNamesList[i])
+
+        self.allGenericZonesList[tempNamesList[i]] = distance
+        tasksReportController:Debug("GenericZoneManager:SetGenericZones(): Added zone " .. tempNamesList[i] .. " distance = " .. self.allGenericZonesList[tempNamesList[i]])
+    end
+
+end
+
+function GenericZoneManager:UpdateZonesCoalitions()
+    self.allFriendlyZonesList = {}
+    self.allEnemyZonesList = {}
+    self.allFriendlyFrontZonesList = {}
+    self.allEnemyFrontZonesList = {}
+
+    for k, v in pairs(self.allGenericZonesList) do 
+        if self.coalition == self.frontlineHandler:GetZoneCoalition(k, v) then 
+            table.insert( self.allFriendlyZonesList, k )
+
+            if self.frontlineHandler:GetIsZoneAtFrontline(k, v) == true then 
+                table.insert( self.allFriendlyFrontZonesList, k )
+                tasksReportController:Debug("GenericZoneManager:UpdateZonesCoalitions(): zone named " .. k .. " is added to allFriendlyFrontZonesList")
+            end
+
+            tasksReportController:Debug("GenericZoneManager:UpdateZonesCoalitions(): zone named " .. k .. " is added to friendlyZonesList")
+        else
+            table.insert( self.allEnemyZonesList, k )
+
+            if self.frontlineHandler:GetIsZoneAtFrontline(k, v) == true then 
+                table.insert( self.allEnemyFrontZonesList, k )
+                tasksReportController:Debug("GenericZoneManager:UpdateZonesCoalitions(): zone named " .. k .. " is added to allEnemyFrontZonesList")
+            end
+
+            tasksReportController:Debug("GenericZoneManager:UpdateZonesCoalitions(): zone named " .. k .. " is added to enemyZonesList")
+        end
+    end
+end
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
 --INITIALIZATION

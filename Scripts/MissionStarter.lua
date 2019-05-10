@@ -43,12 +43,23 @@ mainSectorZonesManager:InitializeZones()
 
 mainMissionStarter:StartRandomTask()
 
-SEADController = SEAD:New( {"AirdefenceRadarSamsite"} ) 
+mainFrontlineHandler = FrontLineHandler:New(2, 200000, 900000, 410000, 20000)
+mainFrontlineHandler:SetAnchors("ga:cl<2>", "gae:cl<2>")
 
-testGenerizZoneSetParser = GenericZoneSetParser:New()
-testGenerizZoneSetParser:AddToSet("tp", "forest")
-testGenerizZoneSetParser:AddToSet("tp", "road")
+mainGenericZoneManager = GenericZoneManager:New( mainFrontlineHandler.managerCoalition, mainFrontlineHandler)
+mainGenericZoneManager:SetGenericZones("gz:")
+mainGenericZoneManager:UpdateZonesCoalitions()
 
-for i in ipairs(testGenerizZoneSetParser.setList) do 
-    tasksReportController:Debug("CREATING MARK FOR ZONE " .. testGenerizZoneSetParser.setList[i])
-end
+mainFrontlineHandler:AddOnFrontlineChangeListener(mainGenericZoneManager, "UpdateZonesCoalitions")
+
+mainFrontlineHandler:MoveFrontline(-20000)
+
+-- SEADController = SEAD:New( {"AirdefenceRadarSamsite"} ) 
+
+-- testGenerizZoneSetParser = GenericZoneSetParser:New()
+-- testGenerizZoneSetParser:AddToSet("tp", "forest")
+-- testGenerizZoneSetParser:AddToSet("tp", "road")
+
+-- for i in ipairs(testGenerizZoneSetParser.setList) do 
+--     tasksReportController:Debug("CREATING MARK FOR ZONE " .. testGenerizZoneSetParser.setList[i])
+-- end
