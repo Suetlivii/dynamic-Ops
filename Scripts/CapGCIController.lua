@@ -35,9 +35,11 @@ function GCIController:SetDispatcher()
     self.A2ADispatcher:SetEngageRadius( tonumber(self.engageRadius) )
     self.A2ADispatcher:SetGciRadius( tonumber(self.gciRadius) )
 
-    self.borderZone = mainSectorZonesManager:GetSectorZone(mainCampaignStateManager:GetFrontSectorID(coalition.side.RED))
 
-    self.A2ADispatcher:SetBorderZone( self.borderZone )
+    if self.borderZone ~= nil then 
+        self.borderZone = mainSectorZonesManager:GetSectorZone(mainCampaignStateManager:GetFrontSectorID(coalition.side.RED))
+        self.A2ADispatcher:SetBorderZone( self.borderZone )
+    end
 end
 
 function GCIController:StartCapGCI(_groupPrefix, _airField, _isCap, _isGCI)
