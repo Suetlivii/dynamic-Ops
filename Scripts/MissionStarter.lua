@@ -29,18 +29,6 @@ end
 
 mainMissionStarter = MissionStarter:New()
 
-mainCampaignStateContainer = CampaignStateContainer:New()
-
-mainCampaignStateSetter:SetState()
-
-mainCampaignStateManager = CampaignStateManager:New(mainCampaignStateContainer)
-
-mainSectorZonesManager = SectorZonesManager:New()
-mainSectorZonesManager:InitializeZones()
-
---mainZoneGroupsSpawner = ZoneGroupsSpawner:New()
---mainZoneGroupsSpawner:SpawnAllGroups()
-
 mainMissionStarter:StartRandomTask()
 
 mainFrontlineHandler = FrontLineHandler:New(2, 200000, 900000, 410000, 20000)
