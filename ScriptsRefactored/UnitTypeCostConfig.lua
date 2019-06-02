@@ -1,6 +1,5 @@
-mainCombatScoreUnitsConfig = CombatScoreUnitsConfig:New()
 
-mainCombatScoreUnitsConfig.unitsScoreCost = {
+UnitsCost = {
     ["MiG-25PD"]= 160,
     ["F-5E-3"]= 30,
     ["KC130"]= 200,
