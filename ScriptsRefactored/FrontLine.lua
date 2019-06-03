@@ -94,10 +94,10 @@ function GenericZoneManager:New(_coalition, _frontLineAnchorCoord)
     {
         coalition = _coalition,
         allGenericZonesList = {},
-        allFriendlyZonesList = {},
-        allFriendlyFrontZonesList = {},
-        allEnemyZonesList = {},
-        allEnemyFrontZonesList = {},
+        blueRearZoneNamesList = {},
+        blueFrontLineZoneNamesList = {},
+        redRearZoneNamesList = {},
+        redFrontLineZoneNamesList = {},
         frontLineAnchorCoord = _frontLineAnchorCoord
     }
     self.__index = self
@@ -121,82 +121,57 @@ function GenericZoneManager:GetDistanceToZone(_zoneName)
 end
 
 function GenericZoneManager:UpdateZonesCoalitions(_frontLineDistance, _frontLineDepth)
-    self.allFriendlyZonesList = {}
-    self.allEnemyZonesList = {}
-    self.allFriendlyFrontZonesList = {}
-    self.allEnemyFrontZonesList = {}
+    self.blueRearZoneNamesList = {}
+    self.redRearZoneNamesList = {}
+    self.blueFrontLineZoneNamesList = {}
+    self.redFrontLineZoneNamesList = {}
 
     for k, v in pairs(self.allGenericZonesList) do 
 
         Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. " distance is " .. v)
         if v <= _frontLineDistance then 
             if v >= (_frontLineDistance - _frontLineDepth) then 
-                table.insert( self.allFriendlyFrontZonesList, k )
-                Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to allFriendlyFrontZonesList")
+                if self.coalition == 2 then 
+                    table.insert( self.blueFrontLineZoneNamesList, k )
+                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to blueFrontLineZoneNamesList")
+                else
+                    table.insert( self.redFrontLineZoneNamesList, k )
+                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to redFrontLineZoneNamesList")
+                end
             else
-                table.insert( self.allFriendlyZonesList, k )
-                Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to allFriendlyZonesList")
+                if self.coalition == 2 then 
+                    table.insert( self.blueRearZoneNamesList, k )
+                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to blueRearZoneNamesList")
+                else 
+                    table.insert( self.redRearZoneNamesList, k )
+                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to redRearZoneNamesList")
+                end
             end
         end
 
         if v > _frontLineDistance then 
             if v < (_frontLineDistance + _frontLineDepth) then 
-                table.insert( self.allEnemyFrontZonesList, k )
-                Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to allEnemyFrontZonesList")
+                if self.coalition == 2 then 
+                    table.insert( self.redFrontLineZoneNamesList, k )
+                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to redFrontLineZoneNamesList")
+                else 
+                    table.insert( self.blueFrontLineZoneNamesList, k )
+                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to blueFrontLineZoneNamesList")
+                end
             else
-                table.insert( self.allEnemyZonesList, k )
-                Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to allEnemyZonesList")
+                if coalition == 2 then 
+                    table.insert( self.redRearZoneNamesList, k )
+                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to redRearZoneNamesList")
+                else 
+                    table.insert( self.blueRearZoneNamesList, k )
+                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to blueRearZoneNamesList")
+                end
             end
         end
     end
 end
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
------------------------------------------------------------------------------------------------------------------------------------------------
--- GroupSpawner
------------------------------------------------------------------------------------------------------------------------------------------------
-
-GroupSpawner = {}
-
-function GroupSpawner:New(_groupNamePrefix, _unitsLimit, _spawnedGroupPrefix, _spawnSheduleTime)
-    newObj = 
-    {
-        groupNamePrefix = _groupNamePrefix,
-        unitsLimit = _unitsLimit,
-        spawnedGroupPrefix = _spawnedGroupPrefix,
-        spawnSheduleTime = _spawnSheduleTime,
-        spawnZones = {},
-        mooseSpawn = nil
-    }
-    self.__index = self
-    return setmetatable(newObj, self)  
-end
-
-function GroupSpawner:SetSpawnZones(_zoneNamesList)
-    for i in ipairs(_zoneNamesList) do 
-        table.insert(self.spawnZones, ZONE:New(_zoneNamesList[i]))
-    end
-    
-    if self.mooseSpawn ~= nil then 
-        mooseSpawn.SpawnZoneTable = self.spawnZones
-    end
-end
-
-function GroupSpawner:StartSpawn()
-    self.mooseSpawn = SPAWN:New(self.groupNamePrefix)
-    :InitLimit(self.unitsLimit, 0)
-    :InitRandomizeZones(self.spawnZones)
-    :InitHeading(0, 360)
-    :SpawnScheduled( self.spawnSheduleTime, .1 )
-
-end
-
------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
 -- ZonePlacementFilter

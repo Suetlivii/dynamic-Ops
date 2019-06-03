@@ -19,8 +19,6 @@ blueGenericZoneManager = GenericZoneManager:New(2, anchorZone:GetPointVec2())
 blueGenericZoneManager:SetGenericZones("gz:")
 blueGenericZoneManager:UpdateZonesCoalitions(400000, FrontlineDepth)
 
-testZoneFilter = ZonePlacementFilter:New( {"forest"}, {"GH32"} )
-
-testGroupSpawner = GroupSpawner:New("RedInf", 30, "fg:", 1)
-testGroupSpawner:SetSpawnZones(testZoneFilter:FilterZoneNamesList(blueGenericZoneManager.allEnemyFrontZonesList))
-testGroupSpawner:StartSpawn()
+mainGroupSpawnersConfigurator = GroupSpawnersConfigurator:New(GroupSpawnersConfig)
+mainGroupSpawnersConfigurator:UpdateZones(blueGenericZoneManager.blueRearZoneNamesList, blueGenericZoneManager.blueFrontLineZoneNamesList, blueGenericZoneManager.redRearZoneNamesList, blueGenericZoneManager.redFrontLineZoneNamesList)
+mainGroupSpawnersConfigurator:InitializeSpawners()
