@@ -1,2 +1,5 @@
 isDebugMode = true
-FrontlineDepth = 20000
+
+--FrontLine 
+FrontlineDepth = 8000
+DefaultFrontlineDistance = 398000

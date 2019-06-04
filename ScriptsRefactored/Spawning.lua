@@ -42,6 +42,79 @@ end
 
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
+-- ZonePlacementFilter
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ZonePlacementFilter = {}
+
+function ZonePlacementFilter:New(_matchList, _mgrsList)
+    newObj = 
+    {
+        matchList = _matchList,
+        mgrsList = _mgrsList
+    }
+    self.__index = self
+    return setmetatable(newObj, self)  
+end
+
+function ZonePlacementFilter:FilterZoneNamesList(_zoneNamesList)
+
+    if #self.matchList == 0 and #self.mgrsList == 0 then 
+        Debug:Log("ZonePlacementFilter:FilterZoneNamesList() no mgrs and match words, filter is empty, returning original list")
+        return _zoneNamesList
+    end
+
+    local tempZoneList = {}
+    for i in ipairs(_zoneNamesList) do 
+        if self:FilterMatchWord(_zoneNamesList[i]) == true and self:FilterMGRS(_zoneNamesList[i]) == true then 
+            table.insert( tempZoneList, _zoneNamesList[i] )
+            Debug:Log("ZonePlacementFilter:FilterZoneNamesList() adding zone to list " .. _zoneNamesList[i])
+        end
+    end
+    Debug:Log("ZonePlacementFilter:FilterZoneNamesList() returning zone with count " .. #tempZoneList)
+    return tempZoneList
+end
+
+function ZonePlacementFilter:FilterMatchWord(_name)
+
+    if #self.matchList == 0 then 
+        return true
+    end
+
+    for i in ipairs(self.matchList) do 
+        Debug:Log("ZonePlacementFilter:FilterMatchWord() filtering zone " .. _name .. " for match word " .. self.matchList[i])
+        if string.match(_name, self.matchList[i]) ~= nil then 
+            return true
+        end
+    end
+    return false
+end
+
+function ZonePlacementFilter:FilterMGRS(_name)
+
+    if #self.mgrsList == 0 then 
+        return true
+    end
+
+    local tempZone = ZONE:New(_name)
+    local coord = COORDINATE:NewFromVec2(tempZone:GetVec2()):ToStringMGRS()
+    --MGRS, 37T GH 28000 23375
+    local mgrsString = string.sub( coord, 11, 11 ) .. string.sub( coord, 12, 12 ) .. string.sub( coord, 14, 14 ) .. string.sub( coord, 20, 20 ) 
+    for i in ipairs(self.mgrsList) do 
+        Debug:Log("ZonePlacementFilter:FilterMatchWord() filtering zone mgrs " .. mgrsString .. " for mgrs " .. self.mgrsList[i])
+        if mgrsString == self.mgrsList[i] then 
+            return true
+        end
+    end
+    return false
+end
+
+function ZonePlacementFilter:FilterDistanceFromAnchorLessThan()
+
+end
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
 -- GroupSpawnerConfig example
 -----------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -65,9 +138,6 @@ end
 --         "front", "rear"
 --     }
 -- }
-
-
-
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
 -- GroupSpawnersConfigurator
@@ -140,6 +210,11 @@ function GroupSpawnersConfigurator:UpdateSpawnerZones(_spawner, _config)
     if self:CheckPropertyExist(_config.frontDepth, "rear") == true then 
         self:AddRangeToList(zoneSummary, rearZones )
         Debug:Log("GroupSpawnersConfigurator:UpdateSpawnerZones() this spawner has rear property, adding zones. Summary zones for this is " .. #zoneSummary)
+    end
+    if self:CheckPropertyExist(_config.frontDepth, "any") == true then 
+        self:AddRangeToList(zoneSummary, rearZones )
+        self:AddRangeToList(zoneSummary, frontZones )
+        Debug:Log("GroupSpawnersConfigurator:UpdateSpawnerZones() this spawner has any property, adding zones. Summary zones for this is " .. #zoneSummary)
     end
 
     local zoneFilter = ZonePlacementFilter:New(_config.zoneType, _config.mgrs)

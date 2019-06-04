@@ -8,7 +8,7 @@ GroupSpawnersConfig =
         spawnSheduleTime = 1,
         mgrs = 
         {
-            "GH32", "GH11"
+        
         },
         zoneType = 
         {
@@ -16,7 +16,7 @@ GroupSpawnersConfig =
         },
         frontDepth = 
         {
-            "front"
+            "rear"
         }
     },
     {
@@ -27,7 +27,7 @@ GroupSpawnersConfig =
         spawnSheduleTime = 1,
         mgrs = 
         {
-            "GH20", "GH29", "GH31"
+            
         },
         zoneType = 
         {
@@ -35,7 +35,26 @@ GroupSpawnersConfig =
         },
         frontDepth = 
         {
-            "front"
+            "rear"
+        }
+    },
+    {
+        coalition = 1,
+        groupNamePrefix = "redSu25",
+        unitsLimit = 5,
+        spawnedGroupPrefix = "fg",
+        spawnSheduleTime = 1,
+        mgrs = 
+        {
+            "FH74"
+        },
+        zoneType = 
+        {
+            "af"
+        },
+        frontDepth = 
+        {
+            "any"
         }
     }
 }

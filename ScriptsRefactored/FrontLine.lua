@@ -129,102 +129,125 @@ function GenericZoneManager:UpdateZonesCoalitions(_frontLineDistance, _frontLine
     for k, v in pairs(self.allGenericZonesList) do 
 
         Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. " distance is " .. v)
-        if v <= _frontLineDistance then 
-            if v >= (_frontLineDistance - _frontLineDepth) then 
-                if self.coalition == 2 then 
-                    table.insert( self.blueFrontLineZoneNamesList, k )
-                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to blueFrontLineZoneNamesList")
+
+        if self.coalition == 1 then 
+
+            if v <= _frontLineDistance then 
+                if v <= (_frontLineDistance - _frontLineDepth) then 
+                    table.insert( self.redRearZoneNamesList, k )
+                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to redRearZoneNamesList")
                 else
                     table.insert( self.redFrontLineZoneNamesList, k )
                     Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to redFrontLineZoneNamesList")
                 end
             else
-                if self.coalition == 2 then 
+                if v >= (_frontLineDistance + _frontLineDepth) then 
                     table.insert( self.blueRearZoneNamesList, k )
                     Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to blueRearZoneNamesList")
-                else 
-                    table.insert( self.redRearZoneNamesList, k )
-                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to redRearZoneNamesList")
+                else
+                    table.insert( self.blueFrontLineZoneNamesList, k )
+                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to blueFrontLineZoneNamesList")
                 end
             end
+
         end
 
-        if v > _frontLineDistance then 
-            if v < (_frontLineDistance + _frontLineDepth) then 
-                if self.coalition == 2 then 
-                    table.insert( self.redFrontLineZoneNamesList, k )
-                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to redFrontLineZoneNamesList")
-                else 
+        if self.coalition == 2 then 
+
+            if v <= _frontLineDistance then 
+                if v <= (_frontLineDistance - _frontLineDepth) then 
+                    table.insert( self.blueRearZoneNamesList, k )
+                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to blueRearZoneNamesList")
+                else
                     table.insert( self.blueFrontLineZoneNamesList, k )
                     Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to blueFrontLineZoneNamesList")
                 end
             else
-                if coalition == 2 then 
+                if v >= (_frontLineDistance + _frontLineDepth) then 
                     table.insert( self.redRearZoneNamesList, k )
                     Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to redRearZoneNamesList")
-                else 
-                    table.insert( self.blueRearZoneNamesList, k )
-                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to blueRearZoneNamesList")
+                else
+                    table.insert( self.redFrontLineZoneNamesList, k )
+                    Debug:Log("GenericZoneManager:UpdateZonesCoalitions() zone " .. k .. "added to redFrontLineZoneNamesList")
+                end
+            end
+
+        end
+
+    end
+end
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+-- FrontlineCombatAndPatrolZonesManager
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+FrontlineCombatAndPatrolZonesManager = {}
+
+function FrontlineCombatAndPatrolZonesManager:New(_coalition, _zoneRadius, _patrolZoneOffset)
+    newObj = 
+    {
+        coalition = _coalition,
+        zoneRadius = _zoneRadius,
+        patrolZoneOffset = _patrolZoneOffset,
+        bluePatrolZoneName = nil,
+        redPatrolZoneName = nil,
+        frontlineZoneName = nil,
+        bluePatrolZone = nil,
+        redPatrolZone = nil,
+        frontlineZone = nil
+    }
+    self.__index = self
+    return setmetatable(newObj, self) 
+end
+
+
+function FrontlineCombatAndPatrolZonesManager:UpdateZones(_frontlineDistance, _genericZonesList)
+
+    local minCombatZoneOffset = 999999
+    local minRedZoneOffset = 999999
+    local minBlueZoneOffset = 999999
+
+    for k, v in pairs(_genericZonesList) do 
+
+        if minCombatZoneOffset > math.abs( _frontlineDistance - v ) then 
+            self.frontlineZoneName = k
+            minCombatZoneOffset = math.abs( _frontlineDistance - v )
+        end
+
+        if self.coalition == 1 then 
+            if v < _frontlineDistance then 
+                if minRedZoneOffset > math.abs( _frontlineDistance - self.patrolZoneOffset - v ) then 
+                    self.redPatrolZoneName = k
+                    minRedZoneOffset = math.abs( _frontlineDistance - self.patrolZoneOffset - v )
+                end
+            else
+                if minBlueZoneOffset > math.abs( _frontlineDistance + self.patrolZoneOffset - v ) then 
+                    self.bluePatrolZoneName = k
+                    minBlueZoneOffset = math.abs( _frontlineDistance + self.patrolZoneOffset - v )
                 end
             end
         end
-    end
-end
 
------------------------------------------------------------------------------------------------------------------------------------------------
-
------------------------------------------------------------------------------------------------------------------------------------------------
--- ZonePlacementFilter
------------------------------------------------------------------------------------------------------------------------------------------------
-ZonePlacementFilter = {}
-
-function ZonePlacementFilter:New(_matchList, _mgrsList)
-    newObj = 
-    {
-        matchList = _matchList,
-        mgrsList = _mgrsList
-    }
-    self.__index = self
-    return setmetatable(newObj, self)  
-end
-
-function ZonePlacementFilter:FilterZoneNamesList(_zoneNamesList)
-    local tempZoneList = {}
-    for i in ipairs(_zoneNamesList) do 
-        if self:FilterMatchWord(_zoneNamesList[i]) == true and self:FilterMGRS(_zoneNamesList[i]) == true then 
-            table.insert( tempZoneList, _zoneNamesList[i] )
-            Debug:Log("ZonePlacementFilter:FilterZoneNamesList() adding zone to list " .. _zoneNamesList[i])
+        if self.coalition == 2 then 
+            if v < _frontlineDistance then 
+                if minBlueZoneOffset > math.abs( _frontlineDistance - self.patrolZoneOffset - v ) then 
+                    self.bluePatrolZoneName = k
+                    minBlueZoneOffset = math.abs( _frontlineDistance - self.patrolZoneOffset - v )
+                end
+            else
+                if minRedZoneOffset > math.abs( _frontlineDistance + self.patrolZoneOffset - v ) then 
+                    self.redPatrolZoneName = k
+                    minRedZoneOffset = math.abs( _frontlineDistance + self.patrolZoneOffset - v )
+                end
+            end
         end
+
     end
-    Debug:Log("ZonePlacementFilter:FilterZoneNamesList() returning zone with count " .. #tempZoneList)
-    return tempZoneList
-end
 
-function ZonePlacementFilter:FilterMatchWord(_name)
-    for i in ipairs(self.matchList) do 
-        Debug:Log("ZonePlacementFilter:FilterMatchWord() filtering zone " .. _name .. " for match word " .. self.matchList[i])
-        if string.match(_name, self.matchList[i]) ~= nil then 
-            return true
-        end
-    end
-    return false
-end
-
-function ZonePlacementFilter:FilterMGRS(_name)
-    local tempZone = ZONE:New(_name)
-    local coord = COORDINATE:NewFromVec2(tempZone:GetVec2()):ToStringMGRS()
-    --MGRS, 37T GH 28000 23375
-    local mgrsString = string.sub( coord, 11, 11 ) .. string.sub( coord, 12, 12 ) .. string.sub( coord, 14, 14 ) .. string.sub( coord, 20, 20 ) 
-    for i in ipairs(self.mgrsList) do 
-        Debug:Log("ZonePlacementFilter:FilterMatchWord() filtering zone mgrs " .. mgrsString .. " for mgrs " .. self.mgrsList[i])
-        if mgrsString == self.mgrsList[i] then 
-            return true
-        end
-    end
-    return false
-end
-
-function ZonePlacementFilter:FilterDistanceFromAnchorLessThan()
+    Debug:Log("FrontlineCombatAndPatrolZonesManager:UpdateZones() updated zones, frontline zone is " .. self.frontlineZoneName .. " red patrol is " .. self.redPatrolZoneName .. " blue patrol is " .. self.bluePatrolZoneName)
 
 end
------------------------------------------------------------------------------------------------------------------------------------------------
