@@ -204,50 +204,62 @@ function FrontlineCombatAndPatrolZonesManager:New(_coalition, _zoneRadius, _patr
     return setmetatable(newObj, self) 
 end
 
-
 function FrontlineCombatAndPatrolZonesManager:UpdateZones(_frontlineDistance, _genericZonesList)
 
     local minCombatZoneOffset = 999999
-    local minRedZoneOffset = 999999
-    local minBlueZoneOffset = 999999
+    local minFriendlyZoneOffset = 999999
+    local minEnemyZoneOffset = 999999
+
+    local friendlyZone = nil
+    local friendlyZoneName = nil
+    local enemyZone = nil
+    local enemyZoneName = nil
 
     for k, v in pairs(_genericZonesList) do 
-
         if minCombatZoneOffset > math.abs( _frontlineDistance - v ) then 
             self.frontlineZoneName = k
             minCombatZoneOffset = math.abs( _frontlineDistance - v )
         end
 
-        if self.coalition == 1 then 
-            if v < _frontlineDistance then 
-                if minRedZoneOffset > math.abs( _frontlineDistance - self.patrolZoneOffset - v ) then 
-                    self.redPatrolZoneName = k
-                    minRedZoneOffset = math.abs( _frontlineDistance - self.patrolZoneOffset - v )
-                end
-            else
-                if minBlueZoneOffset > math.abs( _frontlineDistance + self.patrolZoneOffset - v ) then 
-                    self.bluePatrolZoneName = k
-                    minBlueZoneOffset = math.abs( _frontlineDistance + self.patrolZoneOffset - v )
-                end
+        if v < _frontlineDistance then 
+            if minFriendlyZoneOffset > math.abs( _frontlineDistance - self.patrolZoneOffset - v ) then 
+                friendlyZoneName = k
+                minFriendlyZoneOffset = math.abs( _frontlineDistance - self.patrolZoneOffset - v )
+            end
+        else
+            if minEnemyZoneOffset > math.abs( _frontlineDistance + self.patrolZoneOffset - v ) then 
+                enemyZoneName = k
+                minEnemyZoneOffset = math.abs( _frontlineDistance + self.patrolZoneOffset - v )
             end
         end
-
-        if self.coalition == 2 then 
-            if v < _frontlineDistance then 
-                if minBlueZoneOffset > math.abs( _frontlineDistance - self.patrolZoneOffset - v ) then 
-                    self.bluePatrolZoneName = k
-                    minBlueZoneOffset = math.abs( _frontlineDistance - self.patrolZoneOffset - v )
-                end
-            else
-                if minRedZoneOffset > math.abs( _frontlineDistance + self.patrolZoneOffset - v ) then 
-                    self.redPatrolZoneName = k
-                    minRedZoneOffset = math.abs( _frontlineDistance + self.patrolZoneOffset - v )
-                end
-            end
-        end
-
     end
 
-    Debug:Log("FrontlineCombatAndPatrolZonesManager:UpdateZones() updated zones, frontline zone is " .. self.frontlineZoneName .. " red patrol is " .. self.redPatrolZoneName .. " blue patrol is " .. self.bluePatrolZoneName)
+    if self.coalition == 1 then 
+        self.redPatrolZoneName = friendlyZoneName
+        self.bluePatrolZoneName = enemyZoneName
+    else
+        self.bluePatrolZoneName = friendlyZoneName
+        self.redPatrolZoneName = enemyZoneName
+    end
+
+    if self.frontlineZone == nil then 
+        self.frontlineZone = ZONE_RADIUS:New("FrontLineCombatZone", ZONE:New(self.frontlineZoneName):GetVec2(), self.zoneRadius)
+    else
+        self.frontlineZone:SetVec2(ZONE:New(self.frontlineZoneName):GetVec2())
+    end
+
+    if self.redPatrolZone == nil then 
+        self.redPatrolZone = ZONE_RADIUS:New("RedPatrolZone", ZONE:New(self.redPatrolZoneName):GetVec2(), self.zoneRadius)
+    else
+        self.redPatrolZone:SetVec2(ZONE:New(self.redPatrolZoneName):GetVec2())
+    end
+
+    if self.bluePatrolZone == nil then 
+        self.bluePatrolZone = ZONE_RADIUS:New("BluePatrolZone", ZONE:New(self.bluePatrolZoneName):GetVec2(), self.zoneRadius)
+    else
+        self.bluePatrolZone:SetVec2(ZONE:New(self.bluePatrolZoneName):GetVec2())
+    end
+
+    Debug:Log("FrontlineCombatAndPatrolZonesManager:UpdateZones() updated zones, frontline zone vec2 is " .. self.frontlineZone:GetVec2().x .. " red patrol is " .. self.redPatrolZone:GetVec2().x .. " blue patrol is " .. self.bluePatrolZone:GetVec2().x)
 
 end
