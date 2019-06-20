@@ -13,15 +13,22 @@ BlueCombatScoreManager = CombatScoreManager:New(UnitsCost)
 BlueCombatScoreManager:StartScoring()
 
 
-anchorZone = ZONE:New("ga:cl<2>")
+anchorZone = ZONE:New(FrontlineAnchorZoneName)
 
-blueGenericZoneManager = GenericZoneManager:New(2, anchorZone:GetPointVec2())
-blueGenericZoneManager:SetGenericZones("gz:")
+blueGenericZoneManager = GenericZoneManager:New(FrontLineAnchorCoalition, anchorZone:GetPointVec2())
+blueGenericZoneManager:SetGenericZones(GenericZonePrefix)
 blueGenericZoneManager:UpdateZonesCoalitions(DefaultFrontlineDistance, FrontlineDepth)
 
 mainGroupSpawnersConfigurator = GroupSpawnersConfigurator:New(GroupSpawnersConfig)
 mainGroupSpawnersConfigurator:UpdateZones(blueGenericZoneManager.blueRearZoneNamesList, blueGenericZoneManager.blueFrontLineZoneNamesList, blueGenericZoneManager.redRearZoneNamesList, blueGenericZoneManager.redFrontLineZoneNamesList)
 mainGroupSpawnersConfigurator:InitializeSpawners()
 
-mainFrontlineCombatAndPatrolZonesManager = FrontlineCombatAndPatrolZonesManager:New(2, 20000, 25000)
+mainFrontlineCombatAndPatrolZonesManager = FrontlineCombatAndPatrolZonesManager:New(FrontLineAnchorCoalition, FrontlineCombatZoneRadius, FrontlinePatrolZoneOffset)
 mainFrontlineCombatAndPatrolZonesManager:UpdateZones(DefaultFrontlineDistance, blueGenericZoneManager.allGenericZonesList)
+
+mainA2AController = A2AController:New()
+mainA2AController:SetDispatcher(EWRPrefix, DefaultDetectionRange, DefaultEngageRadius, DefaultGciRadius, mainFrontlineCombatAndPatrolZonesManager.frontlineZoneName)
+
+mainA2AConfigurator = A2AConfigurator:New()
+mainA2AConfigurator:SetA2AConfigs(A2AConfig)
+mainA2AConfigurator:SetController(mainA2AController)
