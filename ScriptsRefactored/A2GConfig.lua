@@ -26,6 +26,20 @@
 --     spawnedGroupNamePrefix = "BAI:",
 --     airbaseName = "Kobuleti",
 --     minAlt = 2000,
---     maxAlt = 5000
+--     maxAlt = 5000,
+--     minDistance = 40000,
+--     maxDistance = 100000
 -- }
 
+A2GConfigs = 
+{
+    {
+        groupPrefix = "redSu25",
+        spawnedGroupNamePrefix = "BAI:",
+        airbaseName = "Gudauta",
+        minAlt = 2000,
+        maxAlt = 5000,
+        minDistance = 40000,
+        maxDistance = 100000
+    }
+}

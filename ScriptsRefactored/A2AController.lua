@@ -83,7 +83,7 @@ function A2AController:SetFrontlineDistance(_currentFrontlineDistance)
     end
 end
 
-function A2AController:SetDispatcher(_ewrPrefix, _defaultDetectionRadius, _defaultEngageRadius, _defaultGciRadius, _borderZoneName)
+function A2AController:SetDispatcher(_ewrPrefix, _defaultDetectionRadius, _defaultEngageRadius, _defaultGciRadius, _borderZone)
     --EWR SETUP
     local DetectionSetGroup = SET_GROUP:New()
     DetectionSetGroup:FilterPrefixes( { _ewrPrefix } )
@@ -99,8 +99,8 @@ function A2AController:SetDispatcher(_ewrPrefix, _defaultDetectionRadius, _defau
     self.A2ADispatcher:SetEngageRadius( tonumber(_defaultEngageRadius) )
     self.A2ADispatcher:SetGciRadius( tonumber(_defaultGciRadius) )
 
-    if _borderZoneName ~= nil or _borderZoneName ~= "" then 
-        self.borderZone = ZONE:New(_borderZoneName)
+    if _borderZone ~= nil then 
+        self.borderZone = _borderZone
         --self.A2ADispatcher:SetBorderZone(ZONE:New(_borderZoneName))
     end
 end

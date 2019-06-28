@@ -29,8 +29,13 @@ mainFrontlineCombatAndPatrolZonesManager:UpdateZones(DefaultFrontlineDistance, b
 mainA2AController = A2AController:New()
 mainA2AController:SetFrontlineAnchor(FrontlineAnchorZoneName)
 mainA2AController:SetFrontlineDistance(DefaultFrontlineDistance)
-mainA2AController:SetDispatcher(EWRPrefix, DefaultDetectionRange, DefaultEngageRadius, DefaultGciRadius, mainFrontlineCombatAndPatrolZonesManager.frontlineZoneName)
+mainA2AController:SetDispatcher(EWRPrefix, DefaultDetectionRange, DefaultEngageRadius, DefaultGciRadius, mainFrontlineCombatAndPatrolZonesManager.frontlineZone)
 
 mainA2AConfigurator = A2AConfigurator:New()
 mainA2AConfigurator:SetA2AConfigs(A2AConfig)
 mainA2AConfigurator:SetController(mainA2AController)
+
+mainA2GController = A2GController:New(A2GConfigs)
+mainA2GController:SetFrontline(FrontlineAnchorZoneName, DefaultFrontlineDistance)
+mainA2GController:SetZones(mainFrontlineCombatAndPatrolZonesManager.frontlineZone, mainFrontlineCombatAndPatrolZonesManager.redPatrolZone)
+mainA2GController:StartBAI(10, 0.5, 2)

@@ -22,7 +22,7 @@ GroupSpawnersConfig =
     {
         coalition = 2,
         groupNamePrefix = "BlueInf",
-        unitsLimit = 5,
+        unitsLimit = 10,
         spawnedGroupPrefix = "fg",
         spawnSheduleTime = 1,
         mgrs = 

@@ -244,18 +244,27 @@ function FrontlineCombatAndPatrolZonesManager:UpdateZones(_frontlineDistance, _g
 
     if self.frontlineZone == nil then 
         self.frontlineZone = ZONE_RADIUS:New("FrontLineCombatZone", ZONE:New(self.frontlineZoneName):GetVec2(), self.zoneRadius)
+        --self.frontlineZone = ZONE:New("FrontLineCombatZone")
+        --self.frontlineZone:SetVec2(ZONE:New(self.frontlineZoneName):GetVec2())
+        self.frontlineZoneName = self.frontlineZone:GetName()
     else
         self.frontlineZone:SetVec2(ZONE:New(self.frontlineZoneName):GetVec2())
     end
 
     if self.redPatrolZone == nil then 
         self.redPatrolZone = ZONE_RADIUS:New("RedPatrolZone", ZONE:New(self.redPatrolZoneName):GetVec2(), self.zoneRadius)
+        --self.redPatrolZone = ZONE:New("RedPatrolZone")
+        --self.redPatrolZone:SetVec2(ZONE:New(self.redPatrolZoneName):GetVec2())
+        self.redPatrolZoneName = self.redPatrolZone:GetName()
     else
         self.redPatrolZone:SetVec2(ZONE:New(self.redPatrolZoneName):GetVec2())
     end
 
     if self.bluePatrolZone == nil then 
         self.bluePatrolZone = ZONE_RADIUS:New("BluePatrolZone", ZONE:New(self.bluePatrolZoneName):GetVec2(), self.zoneRadius)
+        --self.bluePatrolZone = ZONE:New("BluePatrolZone")
+        --self.bluePatrolZone:SetVec2(ZONE:New(self.bluePatrolZoneName):GetVec2())
+        self.bluePatrolZoneName = self.bluePatrolZone:GetName()
     else
         self.bluePatrolZone:SetVec2(ZONE:New(self.bluePatrolZoneName):GetVec2())
     end
