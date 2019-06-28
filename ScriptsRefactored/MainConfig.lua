@@ -8,8 +8,8 @@ FrontLineAnchorCoalition = 2
 FrontlineAnchorZoneName = "ga:cl<2>"
 FrontlineDepth = 8000
 DefaultFrontlineDistance = 398000
-FrontlineCombatZoneRadius = 20000
-FrontlinePatrolZoneOffset = 25000
+FrontlineCombatZoneRadius = 45000
+FrontlinePatrolZoneOffset = 80000
 
 --A2AController settings
 EWRPrefix = "EWR"

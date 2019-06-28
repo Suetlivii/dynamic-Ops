@@ -37,24 +37,5 @@ GroupSpawnersConfig =
         {
             "rear"
         }
-    },
-    {
-        coalition = 1,
-        groupNamePrefix = "redSu25",
-        unitsLimit = 5,
-        spawnedGroupPrefix = "fg",
-        spawnSheduleTime = 1,
-        mgrs = 
-        {
-            "FH74"
-        },
-        zoneType = 
-        {
-            "af"
-        },
-        frontDepth = 
-        {
-            "any"
-        }
     }
 }

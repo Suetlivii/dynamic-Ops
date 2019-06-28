@@ -14,7 +14,9 @@
 --         isGci = false,
 --         grouping = 2,
 --         overhead = 1,
---         airCraftLimit = 8
+--         airCraftLimit = 8,
+--         minFrontlineDistance = 15000,
+--         maxFrontlineDistance = 40000
 --     }
 -- }
 
@@ -46,7 +48,7 @@ function A2AConfigurator:SetController(_controller)
     end
 
     for i in ipairs(self.a2aConfigs) do 
-        self.A2AController:StartCapGCI(self.a2aConfigs[i].groupPrefix, self.a2aConfigs[i].minAltitude, self.a2aConfigs[i].maxAltitude, self.a2aConfigs[i].airBase, self.a2aConfigs[i].isCap, self.a2aConfigs[i].isGci, self.a2aConfigs[i].grouping, self.a2aConfigs[i].overhead, self.a2aConfigs[i].airCraftLimit)
+        self.A2AController:StartCapGCI(self.a2aConfigs[i].groupPrefix, self.a2aConfigs[i].minAltitude, self.a2aConfigs[i].maxAltitude, self.a2aConfigs[i].airBase, self.a2aConfigs[i].isCap, self.a2aConfigs[i].isGci, self.a2aConfigs[i].grouping, self.a2aConfigs[i].overhead, self.a2aConfigs[i].airCraftLimit, self.a2aConfigs[i].minFrontlineDistance, self.a2aConfigs[i].maxFrontlineDistance)
         Debug:Log("A2AConfigurator:SetController() setting group from config with prefix " .. self.a2aConfigs[i].groupPrefix)
     end
 end
@@ -61,10 +63,24 @@ function A2AController:New()
     newObj = 
     {
         A2ADispatcher = nil,
-        borderZone = nil
+        borderZone = nil,
+        frontlineAnchorZoneName = nil,
+        currentFrontlineDistance = nil
     }
     self.__index = self
     return setmetatable(newObj, self)
+end
+
+function A2AController:SetFrontlineAnchor(_frontlineAnchorZoneName)
+    if ZONE:FindByName(_frontlineAnchorZoneName) ~= nil then 
+        self.frontlineAnchorZoneName = _frontlineAnchorZoneName
+    end
+end
+
+function A2AController:SetFrontlineDistance(_currentFrontlineDistance)
+    if _currentFrontlineDistance ~= nil or _currentFrontlineDistance ~= 0 then 
+        self.currentFrontlineDistance = _currentFrontlineDistance
+    end
 end
 
 function A2AController:SetDispatcher(_ewrPrefix, _defaultDetectionRadius, _defaultEngageRadius, _defaultGciRadius, _borderZoneName)
@@ -85,12 +101,60 @@ function A2AController:SetDispatcher(_ewrPrefix, _defaultDetectionRadius, _defau
 
     if _borderZoneName ~= nil or _borderZoneName ~= "" then 
         self.borderZone = ZONE:New(_borderZoneName)
-        self.A2ADispatcher:SetBorderZone(ZONE:New(_borderZoneName))
+        --self.A2ADispatcher:SetBorderZone(ZONE:New(_borderZoneName))
     end
 end
 
-function A2AController:StartCapGCI(_groupPrefix, _minAlt, _maxAlt, _airBaseName, _isCap, _isGci, _grouping, _overhead, _limit)
+function A2AController:CheckAirbaseDistanceFromFrontline(_airBaseName, squadronName, _minFrontline, _maxFrontline)
+    if self.frontlineAnchorZoneName ~= nil and (self.currentFrontlineDistance ~= nil or self.currentFrontlineDistance ~= 0) then 
+        local anchorCoord = ZONE:FindByName(self.frontlineAnchorZoneName):GetPointVec2()
+
+        local distanceFromAnchor = AIRBASE:FindByName(_airBaseName):GetPointVec2():Get2DDistance(anchorCoord)
+
+        if _minFrontline ~= nil then 
+            if distanceFromAnchor <= self.currentFrontlineDistance and distanceFromAnchor >= self.currentFrontlineDistance - _minFrontline then 
+                Debug:Log("A2AController:CheckAirbaseDistanceFromFrontline() cap is skipped because too close to frontline, squadrone name is " .. squadronName)
+                return false 
+            end
+        end
+
+        if _minFrontline ~= nil then 
+            if distanceFromAnchor >= self.currentFrontlineDistance and distanceFromAnchor <= self.currentFrontlineDistance + _minFrontline then 
+                Debug:Log("A2AController:CheckAirbaseDistanceFromFrontline() cap is skipped because too close to frontline, squadrone name is " .. squadronName)
+                return false 
+            end
+        end
+
+        if _maxFrontline ~= nil then 
+            if distanceFromAnchor <= self.currentFrontlineDistance and distanceFromAnchor <= self.currentFrontlineDistance - _maxFrontline then 
+                Debug:Log("A2AController:CheckAirbaseDistanceFromFrontline() cap is skipped because too far from frontline, squadrone name is " .. squadronName)
+                return false 
+            end
+        end
+
+        if _maxFrontline ~= nil then 
+            if distanceFromAnchor >= self.currentFrontlineDistance and distanceFromAnchor >= self.currentFrontlineDistance + _maxFrontline then 
+                Debug:Log("A2AController:CheckAirbaseDistanceFromFrontline() cap is skipped because too far from frontline, squadrone name is " .. squadronName)
+                return false 
+            end
+        end
+
+        Debug:Log("A2AController:CheckAirbaseDistanceFromFrontline() no restrictions for airbase distance for squadron " .. squadronName)
+        return true
+
+    else
+        Debug:Log("A2AController:CheckAirbaseDistanceFromFrontline() no settings for airbase distance for squadron " .. squadronName)
+        return true
+    end
+end
+
+function A2AController:StartCapGCI(_groupPrefix, _minAlt, _maxAlt, _airBaseName, _isCap, _isGci, _grouping, _overhead, _limit, _minFrontline, _maxFrontline)
     local squadronName = _groupPrefix .. ":" .. _airBaseName
+
+    if AIRBASE:FindByName(_airBaseName):GetCoalition() ~= GROUP:FindByName(_groupPrefix):GetCoalition() then 
+        Debug:Log("A2AController:StartCapGCI() coalition of airbase does not match group coalition, group prefix: " .. _groupPrefix)
+        return nil
+    end
 
     self.A2ADispatcher:SetSquadron( squadronName, _airBaseName, { _groupPrefix }, _limit )
     self.A2ADispatcher:SetSquadronTakeoffFromParkingHot( squadronName )
@@ -101,8 +165,15 @@ function A2AController:StartCapGCI(_groupPrefix, _minAlt, _maxAlt, _airBaseName,
     end
 
     if _isCap == true and self.borderZone ~= nil then 
+
+        local airbaseCheck = self:CheckAirbaseDistanceFromFrontline(_airBaseName, squadronName, _minFrontline, _maxFrontline)
+        Debug:Log("A2AController:StartCapGCI() airbase check is " .. tostring(airbaseCheck))
+        if airbaseCheck ~= true then 
+            return nil
+        end
+
         self.A2ADispatcher:SetSquadronCap( squadronName, self.borderZone, _minAlt, _maxAlt, 600, 900, 800, 2000, "RADIO" )
-        self.A2ADispatcher:SetSquadronCapInterval( squadronName, 1, 10, 15, 1 )
+        self.A2ADispatcher:SetSquadronCapInterval( squadronName, 1, 600, 800, 1 )
 
         self.A2ADispatcher:SetSquadronGrouping(squadronName, _grouping)
         self.A2ADispatcher:SetSquadronOverhead(squadronName, _overhead)

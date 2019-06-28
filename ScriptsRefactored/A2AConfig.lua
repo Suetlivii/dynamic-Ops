@@ -25,13 +25,29 @@ A2AConfig =
     {
         groupPrefix = "RedPlaneMilitaryFighterMig29s",
         spawnedGroupPrefix = "CapMig29S",
-        minAltitude = 200,
+        minAltitude = 3000,
         maxAltitude = 6000,
         airBase = "Sukhumi-Babushara",
         isCap = true,
         isGci = false,
         grouping = 2,
         overhead = 1,
-        airCraftLimit = 8
+        airCraftLimit = 8,
+        minFrontlineDistance = 40000,
+        maxFrontlineDistance = 100000
+    },
+    {
+        groupPrefix = "BlueF18CCap",
+        spawnedGroupPrefix = "BlueCapF18C",
+        minAltitude = 3000,
+        maxAltitude = 6000,
+        airBase = "Kutaisi",
+        isCap = true,
+        isGci = false,
+        grouping = 2,
+        overhead = 1,
+        airCraftLimit = 8,
+        minFrontlineDistance = 40000,
+        maxFrontlineDistance = 100000 
     }
 }
