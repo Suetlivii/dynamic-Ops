@@ -16,7 +16,8 @@ function A2GController:New(_config)
     {
         a2gConfig = _config,
         combatZone = nil,
-        patrolZone = nil,
+        redPatrolZone = nil,
+        bluePatrolZone = nil,
         baiZone = nil,
         anchorZoneName = nil,
         frontlineDistance = nil,
@@ -39,20 +40,27 @@ function A2GController:SetFrontline(_anchorZoneName, _frontlineDistance)
     end
 end
 
-function A2GController:SetZones(_combatZone, _patrolZone)
+function A2GController:SetZones(_combatZone, _redPatrolZone, _bluePatrolZone)
     if _combatZone ~= nil then 
         self.combatZone = _combatZone
     end 
-    if _patrolZone ~= nil then 
-        self.patrolZone = _patrolZone
+    if _redPatrolZone ~= nil then 
+        self.redPatrolZone = _redPatrolZone
     end 
+    if _bluePatrolZone ~= nil then 
+        self.bluePatrolZone = _bluePatrolZone
+    end
 end
 
 function A2GController:GetRandomGroup()
     local groupsInRangeList = {}
 
     for i in ipairs(self.a2gConfig) do 
-        if self:CheckPosFromFrontline(nil, nil, self.frontlineDistance, self.minDist, self.maxDist) == true then 
+        if self.frontlineDistance ~= nil and self.anchorZoneName ~= nil then 
+            if self:CheckPosFromFrontline(nil, nil, self.frontlineDistance, self.minDist, self.maxDist) == true then 
+                table.insert(groupsInRangeList, self.a2gConfig[i])
+            end
+        else
             table.insert(groupsInRangeList, self.a2gConfig[i])
         end
     end
@@ -71,10 +79,15 @@ function A2GController:CheckPosFromFrontline(_posCoord, _anchorCoord, frontlineD
     return true
 end
 
-function A2GController:SpawnBAIGroup(_LAgroup, _airBaseName)
+function A2GController:SpawnBAIGroup(_LAgroup, _airBaseName, _attackDelay)
 
-    if self.patrolZone == nil then 
-        Debug:Log("A2GController:SpawnBAIGroup() patrolZoneName is nil, impossible to start BAI")
+    if self.bluePatrolZone == nil then 
+        Debug:Log("A2GController:SpawnBAIGroup() bluePatrolZone is nil, impossible to start BAI")
+        return nil 
+    end
+
+    if self.redPatrolZone == nil then 
+        Debug:Log("A2GController:SpawnBAIGroup() redPatrolZone is nil, impossible to start BAI")
         return nil 
     end
 
@@ -89,16 +102,24 @@ function A2GController:SpawnBAIGroup(_LAgroup, _airBaseName)
     end
 
 
-    Debug:Log("A2GController:SpawnBAIGroup() combat zone radius is " .. self.combatZone:GetRadius() .. " patrol zone radius is " .. self.patrolZone:GetRadius())
+    Debug:Log("A2GController:SpawnBAIGroup() combat zone radius is " .. self.combatZone:GetRadius())
 
-    table.insert( self.baiControllersList, AI_CAS_ZONE:New( self.patrolZone, 500, 4000, 400, 1000, self.combatZone ) )
+    if GROUP:FindByName(_LAgroup):GetCoalition() == 1 then 
+        table.insert( self.baiControllersList, AI_CAS_ZONE:New( self.redPatrolZone, 500, 4000, 400, 1000, self.combatZone ) )
+    end
+
+    if GROUP:FindByName(_LAgroup):GetCoalition() == 2 then 
+        table.insert( self.baiControllersList, AI_CAS_ZONE:New( self.bluePatrolZone, 500, 4000, 400, 1000, self.combatZone ) )
+    end
+
+    globalAttackDelayTemp = _attackDelay
 
     if _LAgroup ~= nil and _airBaseName ~= nil then
         table.insert( self.groupSpawners, SPAWN:NewWithAlias(_LAgroup, "BAI:" .. #self.groupSpawners))
         self.groupSpawners[#self.groupSpawners]
         :OnSpawnGroup(
             function( SpawnGroup )
-                self:InitializeBai(SpawnGroup, self.baiControllersList[#self.baiControllersList])
+                self:InitializeBai(SpawnGroup, self.baiControllersList[#self.baiControllersList], globalAttackDelayTemp) 
             end 
         )
         local spawnedGroup = self.groupSpawners[#self.groupSpawners]:SpawnAtAirbase( AIRBASE:FindByName(_airBaseName), SPAWN.Takeoff.Hot )
@@ -106,10 +127,11 @@ function A2GController:SpawnBAIGroup(_LAgroup, _airBaseName)
     end
 end
 
-function A2GController:InitializeBai(_group, baiController)
+function A2GController:InitializeBai(_group, baiController, attackDelay)
     baiController:SetControllable( _group ) 
     baiController:__Start( 1 )
-    baiController:__Engage( 60, 650, 600)
+    Debug:Log("A2GController:SpawnBAIGroup() attack delay is " .. attackDelay)
+    baiController:__Engage( tonumber(attackDelay), 650, 600)
     Debug:Log("A2GController:SpawnBAIGroup() BAI started for group " .. _group:GetName())
 end
 
@@ -121,8 +143,8 @@ function A2GController:StartBAI(_spawnTime, _spawnTimeRnd, _groupsLimitPerTime)
         if #self.baiControllersList < _groupsLimitPerTime then
             local config = selfObj:GetRandomGroup()
             if config ~= nil then 
-                selfObj:SpawnBAIGroup(config.groupPrefix, config.airbaseName)
+                selfObj:SpawnBAIGroup(config.groupPrefix, config.airbaseName, config.attackDelay)
             end
         end
-    end, {}, 5, _spawnTime, _spawnTimeRnd )
+    end, {}, _spawnTime, _spawnTime, _spawnTimeRnd )
 end

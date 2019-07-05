@@ -64,6 +64,8 @@ function A2AController:New()
     {
         A2ADispatcher = nil,
         borderZone = nil,
+        bluePatrolZone = nil,
+        redPatrolZone = nil,
         frontlineAnchorZoneName = nil,
         currentFrontlineDistance = nil
     }
@@ -83,24 +85,34 @@ function A2AController:SetFrontlineDistance(_currentFrontlineDistance)
     end
 end
 
-function A2AController:SetDispatcher(_ewrPrefix, _defaultDetectionRadius, _defaultEngageRadius, _defaultGciRadius, _borderZone)
+function A2AController:SetDispatcher(_ewrPrefix, _defaultDetectionRadius, _defaultEngageRadius, _defaultGciRadius, _borderZone, _redPatrolZone, _bluePatrolZone)
     --EWR SETUP
     local DetectionSetGroup = SET_GROUP:New()
     DetectionSetGroup:FilterPrefixes( { _ewrPrefix } )
     DetectionSetGroup:FilterStart()
 
-    local Detection = DETECTION_AREAS:New( DetectionSetGroup, _defaultDetectionRadius )
+    local Detection = DETECTION_AREAS:New( DetectionSetGroup, 30000 )
 
     --Dispatcher setup
     if self.A2ADispatcher == nil then 
         self.A2ADispatcher = AI_A2A_DISPATCHER:New( Detection )
     end
 
-    self.A2ADispatcher:SetEngageRadius( tonumber(_defaultEngageRadius) )
+    self.A2ADispatcher:SetEngageRadius( 120000 )
     self.A2ADispatcher:SetGciRadius( tonumber(_defaultGciRadius) )
 
     if _borderZone ~= nil then 
         self.borderZone = _borderZone
+        --self.A2ADispatcher:SetBorderZone(ZONE:New(_borderZoneName))
+    end
+
+    if _redPatrolZone ~= nil then 
+        self.redPatrolZone = _redPatrolZone
+        --self.A2ADispatcher:SetBorderZone(ZONE:New(_borderZoneName))
+    end
+
+    if _bluePatrolZone ~= nil then 
+        self.bluePatrolZone = _bluePatrolZone
         --self.A2ADispatcher:SetBorderZone(ZONE:New(_borderZoneName))
     end
 end
@@ -160,27 +172,42 @@ function A2AController:StartCapGCI(_groupPrefix, _minAlt, _maxAlt, _airBaseName,
     self.A2ADispatcher:SetSquadronTakeoffFromParkingHot( squadronName )
     self.A2ADispatcher:SetSquadronLandingAtEngineShutdown( squadronName )
 
-    if _isGCI == true then 
+    if _isGci == true then 
         self.A2ADispatcher:SetSquadronGci( squadronName, 800, 2000 )
+
+        self.A2ADispatcher:SetSquadronGrouping(squadronName, _grouping)
+        self.A2ADispatcher:SetSquadronOverhead(squadronName, _overhead)
     end
 
     if _isCap == true and self.borderZone ~= nil then 
 
-        local airbaseCheck = self:CheckAirbaseDistanceFromFrontline(_airBaseName, squadronName, _minFrontline, _maxFrontline)
-        Debug:Log("A2AController:StartCapGCI() airbase check is " .. tostring(airbaseCheck))
-        if airbaseCheck ~= true then 
-            return nil
+        if self.frontlineAnchorZoneName ~= nil or self.currentFrontlineDistance ~= nil then 
+            local airbaseCheck = self:CheckAirbaseDistanceFromFrontline(_airBaseName, squadronName, _minFrontline, _maxFrontline)
+            Debug:Log("A2AController:StartCapGCI() airbase check is " .. tostring(airbaseCheck))
+            if airbaseCheck ~= true then 
+                return nil
+            end
         end
 
-        self.A2ADispatcher:SetSquadronCap( squadronName, self.borderZone, _minAlt, _maxAlt, 600, 900, 800, 2000, "RADIO" )
+        if GROUP:FindByName(_groupPrefix):GetCoalition() == 1 then 
+            self.A2ADispatcher:SetSquadronCap( squadronName, self.redPatrolZone, _minAlt, _maxAlt, 600, 900, 800, 2000, "RADIO" )
+        end
+
+        if GROUP:FindByName(_groupPrefix):GetCoalition() == 2 then 
+            self.A2ADispatcher:SetSquadronCap( squadronName, self.bluePatrolZone, _minAlt, _maxAlt, 600, 900, 800, 2000, "RADIO" )
+        end
+
         self.A2ADispatcher:SetSquadronCapInterval( squadronName, 1, 600, 800, 1 )
 
         self.A2ADispatcher:SetSquadronGrouping(squadronName, _grouping)
         self.A2ADispatcher:SetSquadronOverhead(squadronName, _overhead)
 
-        self.A2ADispatcher:Start()
         Debug:Log("A2AController:StartCapGCI() statring new squadron named " .. squadronName)
     else
         Debug:Log("A2AController:StartCapGCI() patrol/border zone is null")
     end
+end
+
+function A2AController:StartA2A()
+    self.A2ADispatcher:Start()
 end
