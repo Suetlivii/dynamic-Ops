@@ -84,7 +84,8 @@ MarkCommandController = {}
 function MarkCommandController:New()
     newObj = 
     {
-        
+        spawners = {}, 
+        count = 1
     }
     self.__index = self
     return setmetatable(newObj, self)   
@@ -95,22 +96,26 @@ function MarkCommandController:SetExplosion()
     MarkRemovedEventHandler:HandleEvent(EVENTS.MarkRemoved)
     function MarkRemovedEventHandler:OnEventMarkRemoved(EventData)
         if EventData.text:lower():find("-exp") then
-            local markText = string.match(EventData.text, "-exp<(%d+)>")
-            local vec3 = {y=EventData.pos.y, x=EventData.pos.z, z=EventData.pos.x}
+            local markText = string.match(EventData.text, "-exp<(.-)>")
+            local vec3 = {y=EventData.pos.y, x=EventData.pos.x, z=EventData.pos.z}
             local coord = COORDINATE:NewFromVec3(vec3):Explosion(tonumber(markText))
         end 
     end
 end
 
 function MarkCommandController:SetSpawn()
+    local count = self.count
     MarkRemovedEventHandler = EVENTHANDLER:New()
     MarkRemovedEventHandler:HandleEvent(EVENTS.MarkRemoved)
     function MarkRemovedEventHandler:OnEventMarkRemoved(EventData)
         if EventData.text:lower():find("-spawn") then
-            local markText = string.match(EventData.text, "-spawn<(%a+)>")
-            local vec3 = {y=EventData.pos.y, x=EventData.pos.z, z=EventData.pos.x}
+            local markText = string.match(EventData.text, "-spawn<(.-)>")
+            local vec3 = {y=EventData.pos.y, x=EventData.pos.x, z=EventData.pos.z}
             local coord = COORDINATE:NewFromVec3(vec3)
-            local spawn = SPAWN:New(markText):SpawnFromVec2(coord:GetVec2())
+            if GROUP:FindByName(tostring(markText)) ~= nil then 
+                SPAWN:NewWithAlias(tostring(markText), tostring(markText .. "-" .. count)):SpawnFromVec2(coord:GetVec2())
+                count = count + 1
+            end
         end 
     end
 end
