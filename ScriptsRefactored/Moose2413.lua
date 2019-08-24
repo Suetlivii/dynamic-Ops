@@ -79144,6 +79144,11 @@ do -- AI_A2A_DISPATCHER
     end
 
   end
+
+
+  function AI_A2A_DISPATCHER:SetSquadronSpawnZone(SquadronName, _spawnZone)
+    self.DefenderSquadrons[SquadronName].spawnZone = _spawnZone
+  end
   
   ---
   -- @param #AI_A2A_DISPATCHER self
@@ -80192,7 +80197,12 @@ do -- AI_A2A_DISPATCHER
       end
       
       local TakeoffMethod = self:GetSquadronTakeoff( SquadronName )
-      local Defender = Spawn:SpawnAtAirbase( DefenderSquadron.Airbase, TakeoffMethod, DefenderSquadron.TakeoffAltitude or self.DefenderDefault.TakeoffAltitude ) -- Wrapper.Group#GROUP
+      local Defender = nil
+      if DefenderSquadron.spawnZone == nil then 
+        Defender = Spawn:SpawnAtAirbase( DefenderSquadron.Airbase, TakeoffMethod, DefenderSquadron.TakeoffAltitude or self.DefenderDefault.TakeoffAltitude ) -- Wrapper.Group#GROUP
+      else
+        Defender = Spawn:SpawnInZone(DefenderSquadron.spawnZone, true, DefenderSquadron.TakeoffAltitude or self.DefenderDefault.TakeoffAltitude, DefenderSquadron.TakeoffAltitude or self.DefenderDefault.TakeoffAltitude)
+      end
       self:AddDefenderToSquadron( DefenderSquadron, Defender, DefenderGrouping )
       return Defender, DefenderGrouping
     end
